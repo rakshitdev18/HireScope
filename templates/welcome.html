@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkArena – Welcome</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.container {
+    text-align: center;
+    max-width: 900px;
+    padding: 40px;
+}
+
+h1 {
+    font-size: 38px;
+    margin-bottom: 20px;
+}
+
+.highlight {
+    color: #3b82f6;
+}
+
+.intro-message {
+    font-size: 18px;
+    color: #cbd5e1;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.team {
+    display: flex;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.member {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    transition: 0.3s;
+}
+
+.member:hover {
+    background: rgba(59, 130, 246, 0.15);
+    transform: translateY(-5px);
+}
+
+.member img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    object-fit: cover;
+    border: 3px solid #3b82f6;
+}
+
+.role {
+    font-weight: bold;
+    color: #3b82f6;
+    margin-bottom: 6px;
+}
+
+.name {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.desc {
+    font-size: 14px;
+    color: #cbd5e1;
+}
+
+.next-btn {
+    padding: 12px 25px;
+    background: #3b82f6;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.next-btn:hover {
+    background: #2563eb;
+}
+
+/* Popup */
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-content {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+}
+
+.popup-content button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #3b82f6;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Fullscreen Popup -->
+<!-- <div class="popup" id="fullscreenPopup">
+    <div class="popup-content">
+        <h3>For the Best Experience</h3>
+        <p>Please enable fullscreen mode.</p>
+        <button onclick="enableFullscreen()">Go Fullscreen</button>
+    </div>
+</div> -->
+
+
+<div class="container">
+
+    <h1>Hi Rakshit 👋 Welcome to <span class="highlight">WA Technologies</span></h1>
+
+    <div class="intro-message">
+        I am <b>John Wheeler</b>, your Team Lead.  
+        First of all, congratulations on getting the role of <b>Frontend Developer at WA Technologies</b>.  
+        <br><br>
+        Your task is to design and implement user-facing features with clean UI, 
+        ensure responsiveness, and collaborate with backend and testing teams.
+        <br><br>
+        You can connect with us via <b>WA Teams</b> and <b>WorkMail</b> anytime during the simulation.
+    </div>
+
+    <div class="team">
+
+        <div class="member">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg">
+            <div class="name">John Wheeler</div>
+            <div class="role">Team Lead</div>
+            <div class="desc">Oversees development process and ensures delivery quality.</div>
+        </div>
+
+        <div class="member">
+            <img src="https://randomuser.me/api/portraits/women/44.jpg">
+            <div class="name">Sarah Mitchell</div>
+            <div class="role">Backend Developer</div>
+            <div class="desc">Handles APIs, database logic, and system integration.</div>
+        </div>
+
+        <div class="member">
+            <img src="https://randomuser.me/api/portraits/men/65.jpg">
+            <div class="name">Daniel Brooks</div>
+            <div class="role">QA Tester</div>
+            <div class="desc">Validates features and ensures application stability.</div>
+        </div>
+
+        <div class="member">
+            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png">
+            <div class="name">You</div>
+            <div class="role">Frontend Developer</div>
+            <div class="desc">Designs and implements user-facing features with clean UI.</div>
+        </div>
+
+    </div>
+
+    <button class="next-btn" onclick="goNext()">Next → Enter Workspace</button>
+
+</div>
+
+<script>
+function enableFullscreen() {
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    }
+    document.getElementById("fullscreenPopup").style.display = "none";
+}
+
+function goNext() {
+    window.location.href = /roles/; // Redirect to the roles page
+}
+</script>
+
+</body>
+</html>

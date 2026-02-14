@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevStart | Elite Project Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #ec4899;
+            --accent: #3b82f6;
+            --dark: #030712;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--dark);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        /* --- Background Effects --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #111827 0%, #030712 100%);
+        }
+
+        .liquid {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            filter: blur(100px);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation: morph 15s infinite alternate ease-in-out;
+            opacity: 0.2;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes morph {
+            0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: translate(0, 0) rotate(0deg); }
+            50% { border-radius: 50% 50% 30% 70% / 50% 60% 40% 50%; transform: translate(100px, 50px) rotate(90deg); }
+            100% { border-radius: 70% 30% 50% 50% / 30% 70% 30% 70%; transform: translate(-50px, 100px) rotate(180deg); }
+        }
+
+        /* --- Glassmorphism UI --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .auth-wrapper {
+            width: 420px;
+            height: 620px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .forms-container {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        .form-pane {
+            width: 50%;
+            padding: 40px;
+        }
+
+        /* --- Project Grid --- */
+        .project-card {
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px -10px rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        /* --- FIXED Inputs & Buttons --- */
+        .input-box {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .input-box input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 0;
+            color: white;
+            outline: none;
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+
+        .input-box .line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transition: width 0.4s ease;
+        }
+
+        .input-box input:focus ~ .line { 
+            width: 100%; 
+        }
+
+        /* FIXED: Label positioning */
+        .input-label {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-box input:focus ~ .input-label,
+        .input-box input:not(:placeholder-shown) ~ .input-label {
+            top: -10px;
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Fix for password field */
+        .input-box input::placeholder {
+            color: transparent;
+        }
+
+        .btn-elite {
+            background: white;
+            color: black;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            width: 100%;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-elite:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        /* --- Utilities --- */
+        .hidden-state { 
+            display: none !important; 
+            opacity: 0; 
+        }
+        
+        .fade-in { 
+            animation: fadeIn 0.8s forwards; 
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Fix for flexbox alignment */
+        .min-h-screen {
+            min-height: 100vh;
+        }
+
+        /* Fix for select dropdown */
+        select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            outline: none;
+        }
+
+        select option {
+            background: #1f2937;
+            color: white;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+    <div class="liquid" id="liquid1" style="top: -10%; left: -10%;"></div>
+    <div class="liquid" id="liquid2" style="bottom: -10%; right: -10%; animation-delay: -7s; background: linear-gradient(45deg, var(--secondary), var(--accent));"></div>
+
+    <div id="auth-section" class="flex items-center justify-center min-h-screen">
+        <div class="auth-wrapper glass-card" id="authCard">
+            <div class="forms-container" id="formsContainer">
+                <div class="form-pane">
+                    <h2 class="text-4xl font-bold mb-2">Access</h2>
+                    <p class="text-white/40 mb-10">WELCOME</p>
+                    <form onsubmit="handleAuth(event, 'login')">
+                        <div class="input-box">
+                            <input type="email" id="loginEmail" required placeholder=" ">
+                            <div class="line"></div>
+                            <label class="input-label">Email Address</label>
+                        </div>
+                        <div class="input-box">
+                            <input type="password" id="loginPassword" required placeholder=" ">
+                            <div class="line"></div>
+                            <label class="input-label">Password</label>
+                        </div>
+                        <button type="submit" class="btn-elite mt-6">Log in</button>
+                    </form>
+                    <div class="text-center mt-8 text-white/40 text-sm">
+                        New here? <span class="text-purple-400 cursor-pointer font-bold" onclick="slide(1)">Create Account</span>
+                    </div>
+                </div>
+
+                <div class="form-pane">
+                    <h2 class="text-4xl font-bold mb-2">Join</h2>
+                    <p class="text-white/40 mb-10">Start your development journey.</p>
+                    <form onsubmit="handleAuth(event, 'signup')">
+                        <div class="input-box">
+                            <input type="text" id="signupName" required placeholder=" ">
+                            <div class="line"></div>
+                            <label class="input-label">Full Name</label>
+                        </div>
+                        <div class="input-box">
+                            <input type="email" id="signupEmail" required placeholder=" ">
+                            <div class="line"></div>
+                            <label class="input-label">Email</label>
+                        </div>
+                        <div class="input-box">
+                            <input type="password" id="signupPassword" required placeholder=" ">
+                            <div class="line"></div>
+                            <label class="input-label">Password</label>
+                        </div>
+                        <button type="submit" class="btn-elite mt-6">Register Now</button>
+                    </form>
+                    <div class="text-center mt-8 text-white/40 text-sm">
+                        Have an account? <span class="text-purple-400 cursor-pointer font-bold" onclick="slide(0)">Sign In</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-section" class="hidden-state container mx-auto px-6 py-12">
+        <header class="flex justify-between items-center mb-12 fade-in">
+            <div>
+                <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                    Project Hub
+                </h1>
+                <p class="text-white/50 mt-2">Welcome back, <span id="userDisplayName" class="text-white font-bold">User</span></p>
+            </div>
+            <button onclick="logout()" class="px-6 py-2 border border-red-500/30 text-red-400 rounded-full hover:bg-red-500/10 transition cursor-pointer">
+                Logout
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 fade-in" style="animation-delay: 0.2s;">
+            <div class="glass-card project-card p-8 cursor-pointer" onclick="openProject('data')">
+                <div class="text-4xl mb-4">📊</div>
+                <h3 class="text-xl font-bold mb-2">Data Analysis</h3>
+                <p class="text-white/40 text-sm">Python, Pandas, and visualization pipelines.</p>
+            </div>
+            <div class="glass-card project-card p-8 cursor-pointer" onclick="openProject('frontend')">
+                <div class="text-4xl mb-4">🎨</div>
+                <h3 class="text-xl font-bold mb-2">Frontend</h3>
+                <p class="text-white/40 text-sm">Modern UI/UX with React and Tailwind.</p>
+            </div>
+            <div class="glass-card project-card p-8 cursor-pointer" onclick="openProject('backend')">
+                <div class="text-4xl mb-4">⚙️</div>
+                <h3 class="text-xl font-bold mb-2">Backend</h3>
+                <p class="text-white/40 text-sm">Node.js, Databases, and API architecture.</p>
+            </div>
+            <div class="glass-card project-card p-8 cursor-pointer" onclick="openProject('mail')">
+                <div class="text-4xl mb-4">📧</div>
+                <h3 class="text-xl font-bold mb-2">Mail System</h3>
+                <p class="text-white/40 text-sm">Automation, SMTP, and queuing systems.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="levelModal" class="overlay">
+        <div class="glass-card p-10 max-w-md w-full mx-4">
+            <h2 id="projTitle" class="text-3xl font-bold mb-2">Project Name</h2>
+            <p class="text-white/40 mb-8">Select your proficiency level to begin.</p>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button onclick="chooseLevel('beginner')" class="p-4 border border-white/10 rounded-xl hover:border-purple-500 transition cursor-pointer">Beginner</button>
+                <button onclick="chooseLevel('advanced')" class="p-4 border border-white/10 rounded-xl hover:border-pink-500 transition cursor-pointer">Advanced</button>
+            </div>
+            <div id="langBox" class="hidden">
+                <select id="lang" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg mb-4 outline-none">
+                    <option value="Python">Python</option>
+                    <option value="NodeJS">NodeJS</option>
+                    <option value="React">React</option>
+                </select>
+                <button onclick="startProject()" class="btn-elite">Launch Environment</button>
+            </div>
+            <button onclick="closeModal()" class="w-full mt-4 text-white/30 hover:text-white transition cursor-pointer">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Particle System (Rising Flakes) ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for(let i=0; i<80; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 1 + 0.5,
+                    opacity: Math.random() * 0.5
+                });
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.y -= p.speed;
+                if(p.y < 0) p.y = canvas.height;
+                ctx.fillStyle = `rgba(139, 92, 246, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', initParticles);
+        initParticles();
+        animateParticles();
+
+        // --- 2. Auth Logic ---
+        function slide(index) {
+            document.getElementById('formsContainer').style.transform = `translateX(-${index * 50}%)`;
+        }
+
+        function handleAuth(e, type) {
+            e.preventDefault();
+            const name = type === 'signup' 
+                ? document.getElementById('signupName').value 
+                : document.getElementById('loginEmail').value.split('@')[0];
+            
+            document.getElementById('userDisplayName').innerText = name;
+            
+            // Transition UI
+            document.getElementById('auth-section').classList.add('hidden-state');
+            const dash = document.getElementById('dashboard-section');
+            dash.classList.remove('hidden-state');
+            dash.classList.add('fade-in');
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // --- 3. Project Logic ---
+        let currentProj = '';
+        function openProject(type) {
+            currentProj = type;
+            document.getElementById('projTitle').innerText = type.toUpperCase();
+            document.getElementById('levelModal').style.display = 'flex';
+        }
+
+        function chooseLevel(lvl) {
+            document.getElementById('langBox').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('levelModal').style.display = 'none';
+            document.getElementById('langBox').classList.add('hidden');
+        }
+
+        function startProject() {
+            alert("Environment Initializing for " + currentProj + "... Check Console.");
+            closeModal();
+        }
+
+        // --- 4. Interactive Cursor Parallax ---
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 40;
+            const y = (window.innerHeight / 2 - e.pageY) / 40;
+            
+            const card = document.getElementById('authCard');
+            if(card) card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+            
+            document.getElementById('liquid1').style.transform = `translate(${x * 2}px, ${y * 2}px)`;
+            document.getElementById('liquid2').style.transform = `translate(${-x * 2}px, ${-y * 2}px)`;
+        });
+
+        // Fix for form labels on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all input fields to check if they have content
+            const inputs = document.querySelectorAll('.input-box input');
+            inputs.forEach(input => {
+                // Trigger the label position if there's already content
+                if (input.value) {
+                    input.dispatchEvent(new Event('input'));
+                }
+                
+                // Add event listener for real-time updates
+                input.addEventListener('input', function() {
+                    const label = this.parentElement.querySelector('.input-label');
+                    if (this.value) {
+                        label.style.top = '-10px';
+                        label.style.fontSize = '12px';
+                        label.style.color = 'var(--primary)';
+                        label.style.fontWeight = '600';
+                    } else {
+                        label.style.top = '12px';
+                        label.style.fontSize = '';
+                        label.style.color = '';
+                        label.style.fontWeight = '';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

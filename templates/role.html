@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WorkArena | Workspace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 text-white h-screen flex overflow-hidden">
+<div class="w-24 bg-slate-950 flex flex-col items-center py-6 gap-8 shadow-xl">
+
+  <!-- IDE -->
+  <a href="/ide/" target="_blank"
+       class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+       title="IDE">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-blue-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M8 9l-3 3 3 3m8-6l3 3-3 3"/>
+    </svg>
+  </a>
+
+  <!-- WorkMail -->
+  <a href="/mail/" target="_blank" 
+       class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+       title="WorkMail">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-red-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M3 8l9 6 9-6M4 6h16v12H4z"/>
+    </svg>
+  </a>
+
+  <!-- WA Teams -->
+<a href="/teams/"
+   class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+   title="WA Teams" target="_blank">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-purple-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M17 20h5V4H2v16h5m10 0v-4a4 4 0 00-8 0v4m8 0H9"/>
+    </svg>
+</a>
+
+
+  <!-- Notepad -->
+  <button onclick="toggleNotepadModal()"
+       class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+       title="Notepad">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-green-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M9 12h6m-6 4h6M9 8h6m-7 12h8a2 2 0 002-2V6a2 2 0 00-2-2h-3l-1-1H9L8 4H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+    </svg>
+  </button>
+
+  <!-- Excel -->
+  <a href="https://excel.cloud.microsoft/" target="_blank"
+       class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+       title="Excel">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-emerald-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M3 4h18v16H3z"/>
+    </svg>
+  </a>
+
+  <!-- PowerPoint -->
+  <a href="https://powerpoint.cloud.microsoft/" target="_blank"
+       class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+       title="PowerPoint">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-orange-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle cx="12" cy="12" r="9" stroke-width="2"/>
+    </svg>
+  </a>
+
+  <!-- Sticky Notes -->
+  <button onclick="toggleStickyNotes()"
+       class="icon group cursor-pointer p-2 rounded-lg hover:bg-slate-800 transition"
+       title="Sticky Notes">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="h-7 w-7 text-white/60 group-hover:text-yellow-400 transition"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+    </svg>
+  </button>
+
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6 flex flex-col">
+
+  <div class="flex items-center gap-4 mb-6">
+  <h1 class="text-2xl font-semibold">Workspace</h1>
+  
+  <div class="ml-auto">
+  <a href="/result/" 
+     class="px-4 py-2 bg-red-600 rounded-lg transition" title="End Simulation"> End Simulation </a> 
+  </div>
+</div>
+
+  <!-- BLACK WORK AREA -->
+  <div class="bg-black/40 flex-1 rounded-xl overflow-hidden border border-white/10 relative">
+    <!-- Wallpaper Background -->
+    <img id="workspaceWallpaper" src="https://media.licdn.com/dms/image/v2/D5612AQFSVrEIJxq_aA/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1679683081898?e=2147483647&v=beta&t=jy1SUv24boZ0boUutFvP8a1cDXfXcvnHinVztXzqen4" alt="Workspace" class="w-full h-full absolute inset-0 object-cover">
+
+    <!-- Files Display Area (on top of wallpaper) -->
+    <div id="filesArea" class="w-full h-full overflow-auto p-8 absolute inset-0">
+        <div id="filesList" class="grid gap-6" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); width: fit-content;"></div>
+    </div>
+
+    <div id="workspaceContent" class="w-full h-full flex flex-col hidden">
+        <!-- Iframe will be shown here when navigating -->
+    </div>
+
+    <iframe id="workspaceFrame"
+              class="w-full h-full absolute inset-0 hidden"
+              frameborder="0">
+      </iframe>
+  </div>
+  
+</div>
+
+<!-- STICKY NOTES PANEL -->
+<div id="stickyNotesPanel" class="hidden">
+    <div id="panelHeader" class="panel-header">
+        <h2>📝 Sticky Notes</h2>
+        <button id="closePanel" onclick="toggleStickyNotes()" class="close-panel-btn" title="Close">✕</button>
+    </div>
+    <div class="panel-content">
+        <input type="text" id="noteTitle" placeholder="Note title..." />
+        <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+        <button onclick="addStickyNote()" class="btn-primary">+ Add Note</button>
+    </div>
+</div>
+
+<!-- STICKY NOTES CONTAINER -->
+<div id="stickyNotesContainer"></div>
+
+<!-- NOTEPAD MODAL -->
+<div id="notepadModal" class="notepad-modal hidden">
+    <div class="notepad-container">
+        <div class="notepad-header">
+            <h2>📋 Notepad</h2>
+            <button onclick="toggleNotepadModal()" class="notepad-close-btn" title="Close">✕</button>
+        </div>
+        <textarea id="notepadText" class="notepad-text" placeholder="Start typing..."></textarea>
+        <div class="notepad-footer">
+            <button onclick="saveNotepadContent()" class="notepad-btn">💾 Save</button>
+            <button onclick="copyNotepadText()" class="notepad-btn">📋 Copy</button>
+            <button onclick="clearNotepadContent()" class="notepad-btn danger">🗑️ Clear</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadPage(page, element) {
+    document.getElementById("workspaceFrame").src = page;
+    document.getElementById("workspaceFrame").classList.remove('hidden');
+    document.getElementById("workspaceWallpaper").classList.add('hidden');
+    document.getElementById("filesArea").classList.add('hidden');
+
+    // Remove active state
+    document.querySelectorAll(".icon").forEach(icon => {
+        icon.classList.remove("bg-slate-800");
+    });
+
+    // Add active state
+    element.classList.add("bg-slate-800");
+}
+
+// Handle file context menu
+function handleFileContextMenu(event, fileId) {
+    event.preventDefault();
+    // Additional context menu options can be added here
+}
+
+// ========== STICKY NOTES FUNCTIONALITY ==========
+
+let stickyNotesVisible = false;
+let draggedNote = null;
+let offsetX = 0;
+let offsetY = 0;
+let panelDragging = false;
+let panelOffsetX = 0;
+let panelOffsetY = 0;
+
+// Initialize sticky notes
+function initStickyNotes() {
+    const container = document.getElementById('stickyNotesContainer');
+    if (!container) return;
+
+    const notes = getStickyNotesFromStorage();
+    notes.forEach(note => {
+        createNoteElement(note);
+    });
+
+    // Setup panel dragging
+    setupPanelDragging();
+}
+
+// Setup panel dragging
+function setupPanelDragging() {
+    const panel = document.getElementById('stickyNotesPanel');
+    const header = document.getElementById('panelHeader');
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.close-panel-btn')) return;
+        panelDragging = true;
+        const rect = panel.getBoundingClientRect();
+        panelOffsetX = e.clientX - rect.left;
+        panelOffsetY = e.clientY - rect.top;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!panelDragging) return;
+        const panel = document.getElementById('stickyNotesPanel');
+        panel.style.left = (e.clientX - panelOffsetX) + 'px';
+        panel.style.top = (e.clientY - panelOffsetY) + 'px';
+        panel.style.right = 'auto';
+        panel.style.bottom = 'auto';
+    });
+
+    document.addEventListener('mouseup', () => {
+        panelDragging = false;
+    });
+}
+
+// Toggle sticky notes panel visibility
+function toggleStickyNotes() {
+    stickyNotesVisible = !stickyNotesVisible;
+    const panel = document.getElementById('stickyNotesPanel');
+    
+    if (stickyNotesVisible) {
+        panel.classList.remove('hidden');
+    } else {
+        panel.classList.add('hidden');
+        closeContextMenu();
+    }
+    // Container is always visible - notes stay on screen
+}
+
+// Get notes from localStorage
+function getStickyNotesFromStorage() {
+    const notes = localStorage.getItem('stickyNotes');
+    return notes ? JSON.parse(notes) : [];
+}
+
+// Save notes to localStorage
+function saveStickyNotesToStorage(notes) {
+    localStorage.setItem('stickyNotes', JSON.stringify(notes));
+}
+
+// Add new sticky note
+function addStickyNote() {
+    const title = document.getElementById('noteTitle').value || 'Untitled';
+    const content = document.getElementById('noteContent').value || '';
+    
+    if (!title && !content) return;
+
+    const note = {
+        id: Date.now(),
+        title: title,
+        content: content,
+        color: 'yellow',
+        x: 100,
+        y: 100
+    };
+
+    const notes = getStickyNotesFromStorage();
+    notes.push(note);
+    saveStickyNotesToStorage(notes);
+
+    createNoteElement(note);
+
+    // Clear form
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteContent').value = '';
+}
+
+// Create note element and add to DOM
+function createNoteElement(note) {
+    const container = document.getElementById('stickyNotesContainer');
+    const noteEl = document.createElement('div');
+    noteEl.className = 'sticky-note';
+    noteEl.id = `note-${note.id}`;
+    noteEl.style.backgroundColor = getColorClass(note.color);
+    noteEl.style.left = note.x + 'px';
+    noteEl.style.top = note.y + 'px';
+    noteEl.draggable = true;
+
+    const isCollapsed = note.collapsed || false;
+
+    noteEl.innerHTML = `
+        <div class="sticky-note-header">
+            <h3 class="sticky-note-title">${escapeHtml(note.title)}</h3>
+            <div class="note-actions">
+                <button class="note-collapse-btn" onclick="toggleNoteCollapse(${note.id})" title="Collapse/Expand">${isCollapsed ? '▼' : '▲'}</button>
+                <button class="note-menu-btn" onclick="toggleContextMenu(${note.id})" title="More options">⋮</button>
+            </div>
+        </div>
+        <div class="sticky-note-body ${isCollapsed ? 'collapsed' : ''}">
+            <textarea class="sticky-note-content" onchange="updateNoteContent(${note.id}, this.value)">${escapeHtml(note.content)}</textarea>
+            <div class="sticky-note-color-bar">
+                <button onclick="changeNoteColor(${note.id}, 'yellow')" class="color-btn yellow-btn" title="Yellow"></button>
+                <button onclick="changeNoteColor(${note.id}, 'pink')" class="color-btn pink-btn" title="Pink"></button>
+                <button onclick="changeNoteColor(${note.id}, 'blue')" class="color-btn blue-btn" title="Blue"></button>
+                <button onclick="changeNoteColor(${note.id}, 'green')" class="color-btn green-btn" title="Green"></button>
+            </div>
+        </div>
+        <div id="menu-${note.id}" class="context-menu hidden">
+            <button onclick="editNote(${note.id})" class="menu-item">✏️ Edit</button>
+            <button onclick="deleteNote(${note.id})" class="menu-item delete-item">🗑️ Delete</button>
+        </div>
+    `;
+
+    // Drag events
+    noteEl.addEventListener('dragstart', startDrag);
+    noteEl.addEventListener('dragend', endDrag);
+
+    container.appendChild(noteEl);
+}
+
+// Toggle note collapse state
+function toggleNoteCollapse(id) {
+    const notes = getStickyNotesFromStorage();
+    const note = notes.find(n => n.id === id);
+    if (note) {
+        note.collapsed = !note.collapsed;
+        saveStickyNotesToStorage(notes);
+        
+        const noteEl = document.getElementById(`note-${id}`);
+        const body = noteEl.querySelector('.sticky-note-body');
+        const collapseBtn = noteEl.querySelector('.note-collapse-btn');
+        
+        if (note.collapsed) {
+            body.classList.add('collapsed');
+            collapseBtn.textContent = '▼';
+        } else {
+            body.classList.remove('collapsed');
+            collapseBtn.textContent = '▲';
+        }
+    }
+}
+
+// Toggle context menu
+function toggleContextMenu(id) {
+    closeContextMenu();
+    const menu = document.getElementById(`menu-${id}`);
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+// Close context menu
+function closeContextMenu() {
+    const menus = document.querySelectorAll('.context-menu');
+    menus.forEach(menu => menu.classList.add('hidden'));
+}
+
+// Edit note
+function editNote(id) {
+    const notes = getStickyNotesFromStorage();
+    const note = notes.find(n => n.id === id);
+    if (note) {
+        document.getElementById('noteTitle').value = note.title;
+        document.getElementById('noteContent').value = note.content;
+        deleteNote(id);
+        closeContextMenu();
+    }
+}
+
+// Delete sticky note
+function deleteNote(id) {
+    if (!confirm('Delete this note?')) return;
+
+    const notes = getStickyNotesFromStorage();
+    const filteredNotes = notes.filter(note => note.id !== id);
+    saveStickyNotesToStorage(filteredNotes);
+
+    const noteEl = document.getElementById(`note-${id}`);
+    if (noteEl) {
+        noteEl.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => noteEl.remove(), 300);
+    }
+    closeContextMenu();
+}
+
+// Update sticky note content
+function updateNoteContent(id, content) {
+    const notes = getStickyNotesFromStorage();
+    const note = notes.find(n => n.id === id);
+    if (note) {
+        note.content = content;
+        saveStickyNotesToStorage(notes);
+    }
+}
+
+// Change note color
+function changeNoteColor(id, color) {
+    const notes = getStickyNotesFromStorage();
+    const note = notes.find(n => n.id === id);
+    if (note) {
+        note.color = color;
+        saveStickyNotesToStorage(notes);
+        const noteEl = document.getElementById(`note-${id}`);
+        if (noteEl) {
+            noteEl.style.backgroundColor = getColorClass(color);
+        }
+    }
+}
+
+// Get color class
+function getColorClass(color) {
+    const colors = {
+        'yellow': '#fef3c7',
+        'pink': '#fbcfe8',
+        'blue': '#bfdbfe',
+        'green': '#bbf7d0'
+    };
+    return colors[color] || '#fef3c7';
+}
+
+// Drag functionality
+function startDrag(e) {
+    draggedNote = e.target.closest('.sticky-note');
+    if (!draggedNote) return;
+    const rect = draggedNote.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    draggedNote.style.opacity = '0.8';
+    draggedNote.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.5)';
+}
+
+function endDrag(e) {
+    if (!draggedNote) return;
+    draggedNote.style.opacity = '1';
+    draggedNote.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+
+    const container = document.getElementById('stickyNotesContainer');
+    const containerRect = container.getBoundingClientRect();
+    const x = Math.max(0, e.clientX - containerRect.left - offsetX);
+    const y = Math.max(0, e.clientY - containerRect.top - offsetY);
+
+    draggedNote.style.left = x + 'px';
+    draggedNote.style.top = y + 'px';
+
+    // Save position to localStorage
+    const noteId = parseInt(draggedNote.id.split('-')[1]);
+    const notes = getStickyNotesFromStorage();
+    const note = notes.find(n => n.id === noteId);
+    if (note) {
+        note.x = x;
+        note.y = y;
+        saveStickyNotesToStorage(notes);
+    }
+
+    draggedNote = null;
+}
+
+// Escape HTML for security
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Close context menu on click outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.sticky-note')) {
+        closeContextMenu();
+    }
+});
+
+// ========== NOTEPAD FUNCTIONALITY ==========
+
+let notepadVisible = false;
+let currentEditingFileId = null;
+
+// Toggle notepad modal visibility
+function toggleNotepadModal() {
+    notepadVisible = !notepadVisible;
+    const modal = document.getElementById('notepadModal');
+    
+    if (notepadVisible) {
+        modal.classList.remove('hidden');
+        loadNotepadContent();
+        document.getElementById('notepadText').focus();
+    } else {
+        modal.classList.add('hidden');
+        currentEditingFileId = null; // Reset when closing
+    }
+}
+
+// Save notepad content to localStorage
+function saveNotepadContent() {
+    const text = document.getElementById('notepadText').value;
+    if (!text.trim()) {
+        alert('Cannot save empty notepad!');
+        return;
+    }
+
+    const files = getNotepadFilesFromStorage();
+
+    if (currentEditingFileId) {
+        // Update existing file
+        const file = files.find(f => f.id === currentEditingFileId);
+        if (file) {
+            file.content = text;
+            file.modified = new Date().toLocaleString();
+            localStorage.setItem('notepadFiles', JSON.stringify(files));
+            showNotification(`File "${file.name}" updated!`);
+            loadNotepadFiles();
+            toggleNotepadModal();
+            currentEditingFileId = null;
+        }
+    } else {
+        // Create new file
+        const fileName = prompt('Enter file name:', 'notepad-' + new Date().toISOString().slice(0, 10));
+        if (!fileName) return;
+
+        const file = {
+            id: Date.now(),
+            name: fileName.trim() || 'Untitled',
+            content: text,
+            created: new Date().toLocaleString(),
+            modified: new Date().toLocaleString(),
+            x: 20 + (files.length * 30), // Offset each new file slightly
+            y: 20 + (files.length * 30)
+        };
+
+        files.push(file);
+        localStorage.setItem('notepadFiles', JSON.stringify(files));
+        
+        showNotification(`File "${file.name}" saved!`);
+        loadNotepadFiles();
+        toggleNotepadModal(); // Close modal after saving
+    }
+}
+
+// Get notepad files from localStorage
+function getNotepadFilesFromStorage() {
+    const files = localStorage.getItem('notepadFiles');
+    return files ? JSON.parse(files) : [];
+}
+
+// Load notepad files and display them
+function loadNotepadFiles() {
+    const files = getNotepadFilesFromStorage();
+    const filesList = document.getElementById('filesList');
+    const filesArea = document.getElementById('filesArea');
+    
+   /*  if (files.length === 0) {
+        filesList.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center; padding: 40px;">No saved files yet. Create a notepad file to get started!</p>';
+        return;
+    } */
+
+    // Change to absolute positioning for drag and drop
+    filesList.style.display = 'block';
+    filesList.style.position = 'relative';
+    filesList.style.width = '100%';
+    filesList.style.height = '100%';
+    filesList.style.gridTemplateColumns = 'unset';
+    filesList.style.gap = 'unset';
+    
+    filesList.innerHTML = files.map(file => `
+        <div class="file-icon-wrapper" 
+             id="file-wrapper-${file.id}"
+             draggable="true"
+             ondragstart="startFileDrag(event, ${file.id})"
+             ondragend="endFileDrag(event, ${file.id})"
+             oncontextmenu="handleFileContextMenu(event, ${file.id})"
+             style="position: absolute; left: ${file.x || 20}px; top: ${file.y || 20}px;">
+            <div class="file-icon-container" ondblclick="openNotepadFile(${file.id})">
+                <div class="file-icon">📄</div>
+            </div>
+            <div class="file-label" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
+            <button onclick="deleteNotepadFile(${file.id}, event)" class="file-icon-delete" title="Delete">✕</button>
+        </div>
+    `).join('');
+}
+
+// Start dragging a file
+let draggedFileId = null;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function startFileDrag(event, fileId) {
+    draggedFileId = fileId;
+    const wrapper = document.getElementById(`file-wrapper-${fileId}`);
+    const rect = wrapper.getBoundingClientRect();
+    const filesArea = document.getElementById('filesArea');
+    const areaRect = filesArea.getBoundingClientRect();
+    
+    dragOffsetX = event.clientX - rect.left;
+    dragOffsetY = event.clientY - rect.top;
+    
+    wrapper.style.opacity = '0.7';
+    wrapper.style.cursor = 'grabbing';
+}
+
+function endFileDrag(event, fileId) {
+    const wrapper = document.getElementById(`file-wrapper-${fileId}`);
+    const filesArea = document.getElementById('filesArea');
+    const areaRect = filesArea.getBoundingClientRect();
+    
+    // Calculate position relative to filesArea
+    const x = Math.max(0, event.clientX - areaRect.left - dragOffsetX);
+    const y = Math.max(0, event.clientY - areaRect.top - dragOffsetY);
+    
+    // Update wrapper position
+    wrapper.style.left = x + 'px';
+    wrapper.style.top = y + 'px';
+    wrapper.style.opacity = '1';
+    wrapper.style.cursor = 'grab';
+    
+    // Save position to localStorage
+    const files = getNotepadFilesFromStorage();
+    const file = files.find(f => f.id === fileId);
+    if (file) {
+        file.x = x;
+        file.y = y;
+        localStorage.setItem('notepadFiles', JSON.stringify(files));
+    }
+    
+    draggedFileId = null;
+}
+
+// Open notepad file
+function openNotepadFile(fileId) {
+    const files = getNotepadFilesFromStorage();
+    const file = files.find(f => f.id === fileId);
+    
+    if (file) {
+        currentEditingFileId = fileId; // Track that we're editing this file
+        document.getElementById('notepadText').value = file.content;
+        toggleNotepadModal();
+    }
+}
+
+// Delete notepad file
+function deleteNotepadFile(fileId, event) {
+    event.stopPropagation();
+    
+    if (confirm('Delete this file?')) {
+        const files = getNotepadFilesFromStorage();
+        const filteredFiles = files.filter(f => f.id !== fileId);
+        localStorage.setItem('notepadFiles', JSON.stringify(filteredFiles));
+        showNotification('File deleted!');
+        loadNotepadFiles();
+    }
+}
+
+// Load notepad content from localStorage (working notepad)
+function loadNotepadContent() {
+    const text = localStorage.getItem('notepadContent') || '';
+    document.getElementById('notepadText').value = text;
+}
+
+// Copy notepad text to clipboard
+function copyNotepadText() {
+    const text = document.getElementById('notepadText').value;
+    if (!text) {
+        alert('Notepad is empty!');
+        return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Text copied to clipboard!');
+    });
+}
+
+// Clear notepad content
+function clearNotepadContent() {
+    if (confirm('Clear all content? This cannot be undone.')) {
+        document.getElementById('notepadText').value = '';
+        localStorage.removeItem('notepadContent');
+        showNotification('Notepad cleared!');
+    }
+}
+
+// Show notification
+function showNotification(message) {
+    const notif = document.createElement('div');
+    notif.textContent = message;
+    notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10001;
+        animation: slideIn 0.3s ease-out;
+    `;
+    document.body.appendChild(notif);
+    setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notif.remove(), 300);
+    }, 2000);
+}
+
+// Reset workspace to show wallpaper and files
+function resetWorkspaceView() {
+    document.getElementById("workspaceFrame").classList.add('hidden');
+    document.getElementById("workspaceWallpaper").classList.remove('hidden');
+    document.getElementById("filesArea").classList.remove('hidden');
+    
+    // Remove active state from all icons
+    document.querySelectorAll(".icon").forEach(icon => {
+        icon.classList.remove("bg-slate-800");
+    });
+}
+
+// Initialize on page load
+window.addEventListener('load', () => {
+    initStickyNotes();
+    loadNotepadFiles();
+});
+</script>
+
+<style>
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+.hidden {
+    display: none !important;
+}
+
+#stickyNotesPanel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #3f46e6;
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(63, 70, 230, 0.2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #3f46e6;
+    cursor: move;
+    user-select: none;
+    background: linear-gradient(90deg, #3f46e6 0%, #2563eb 100%);
+    border-radius: 14px 14px 0 0;
+}
+
+.panel-header h2 {
+    margin: 0;
+    color: #f0f9ff;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-panel-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #f0f9ff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-panel-btn:hover {
+    background: rgba(255, 59, 48, 0.7);
+    transform: scale(1.1);
+}
+
+.panel-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#stickyNotesPanel input,
+#stickyNotesPanel textarea {
+    padding: 12px;
+    border: 1.5px solid #335ee6;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: inherit;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+#stickyNotesPanel input::placeholder,
+#stickyNotesPanel textarea::placeholder {
+    color: #64748b;
+}
+
+#stickyNotesPanel input:focus,
+#stickyNotesPanel textarea:focus {
+    outline: none;
+    border-color: #60a5fa;
+    background: #1e293b;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+#stickyNotesPanel textarea {
+    resize: vertical;
+    min-height: 80px;
+    max-height: 120px;
+}
+
+.btn-primary {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #3f46e6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(63, 70, 230, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(63, 70, 230, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+#stickyNotesContainer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 999;
+}
+
+#stickyNotesContainer div.sticky-note {
+    pointer-events: auto;
+}
+
+.sticky-note {
+    position: fixed;
+    width: 250px;
+    background: #fef3c7;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    cursor: move;
+    user-select: none;
+    pointer-events: auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.2s;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.sticky-note:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.sticky-note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 8px;
+}
+
+.sticky-note-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+    flex: 1;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.note-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.note-collapse-btn {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.note-collapse-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+}
+
+.note-menu-btn {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+}
+
+.sticky-note-body {
+    max-height: 200px;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    opacity: 1;
+}
+
+.sticky-note-body.collapsed {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.sticky-note-content {
+    width: 100%;
+    height: 110px;
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #1f2937;
+    font-size: 13px;
+    resize: none;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.sticky-note-content:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.sticky-note-color-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.color-btn {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.yellow-btn {
+    background: #fef3c7;
+}
+
+.pink-btn {
+    background: #fbcfe8;
+}
+
+.blue-btn {
+    background: #bfdbfe;
+}
+
+.green-btn {
+    background: #bbf7d0;
+}
+
+.context-menu {
+    position: absolute;
+    bottom: -95px;
+    right: 0;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    min-width: 140px;
+    overflow: hidden;
+    animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.context-menu.hidden {
+    display: none;
+}
+
+.menu-item {
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    color: #e5e7eb;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-bottom: 1px solid #374151;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background: #374151;
+    color: #f3f4f6;
+}
+
+.menu-item.delete-item:hover {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+/* ========== NOTEPAD STYLES ========== */
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.notepad-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    background: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.notepad-modal.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.notepad-container {
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;
+    max-height: 600px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #3f46e6;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 50px rgba(63, 70, 230, 0.3);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: scale(0.95) translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.notepad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 2px solid #3f46e6;
+    background: linear-gradient(90deg, #3f46e6 0%, #2563eb 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.notepad-header h2 {
+    margin: 0;
+    color: #f0f9ff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.notepad-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #f0f9ff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notepad-close-btn:hover {
+    background: rgba(255, 59, 48, 0.8);
+    transform: scale(1.1);
+}
+
+.notepad-text {
+    flex: 1;
+    padding: 20px;
+    border: none;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.notepad-text:focus {
+    background: #1e293b;
+    box-shadow: inset 0 0 0 2px #3f46e6;
+}
+
+.notepad-text::placeholder {
+    color: #64748b;
+}
+
+.notepad-footer {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid #3f46e6;
+    background: #0f172a;
+    border-radius: 0 0 16px 16px;
+    flex-wrap: wrap;
+}
+
+.notepad-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #3f46e6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(63, 70, 230, 0.3);
+}
+
+.notepad-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(63, 70, 230, 0.4);
+}
+
+.notepad-btn:active {
+    transform: translateY(0);
+}
+
+.notepad-btn.danger {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.notepad-btn.danger:hover {
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+}
+
+@media (max-height: 600px) {
+    .notepad-container {
+        max-height: 90vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .notepad-container {
+        width: 95%;
+        height: 85vh;
+    }
+    
+    .notepad-footer {
+        flex-direction: column;
+    }
+    
+    .notepad-btn {
+        min-width: auto;
+    }
+}
+
+/* ========== FILE CARD STYLES ========== */
+
+#filesArea {
+    background: transparent;
+}
+
+.file-icon-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    width: 100px;
+    text-align: center;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.file-icon-wrapper:active {
+    cursor: grabbing;
+}
+
+
+
+.file-icon-container {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(63, 70, 230, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.file-icon-container:hover {
+    transform: translateY(-8px) scale(1.05);
+}
+
+.file-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.file-label {
+    color: #e0e7ff;
+    font-size: 12px;
+    font-weight: 500;
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.file-icon-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(220, 38, 38, 0.9);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.file-icon-wrapper:hover .file-icon-delete {
+    opacity: 1;
+}
+
+.file-icon-delete:hover {
+    background: rgba(220, 38, 38, 1);
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    #filesList {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+}
+</style>
+
+</body>
+</html>

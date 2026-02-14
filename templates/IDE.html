@@ -1,0 +1,2644 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Cloud IDE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-darker: #181818;
+            --bg-panel: #252526;
+            --bg-active: #1e1e1e;
+            --bg-inactive-tab: #2d2d2d;
+            --text-main: #cccccc;
+            --text-sub: #888888;
+            --accent: #007fd4;
+            --border: #3c3c3c;
+            --terminal-bg: #1e1e1e;
+            --resizer-hover: #007fd4;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            font-size: 13px;
+            user-select: none;
+        }
+
+        /* --- Activity Bar --- */
+        .activity-bar {
+            width: 48px;
+            background-color: #333333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 10px;
+            border-right: 1px solid var(--border);
+            z-index: 20;
+            flex-shrink: 0;
+        }
+
+        .activity-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #858585;
+            position: relative;
+        }
+        .activity-icon:hover { color: #fff; }
+        .activity-icon.active { color: #fff; border-left: 2px solid #fff; }
+        .activity-icon svg { width: 24px; height: 24px; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px;
+            min-width: 0;
+            background-color: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            transition: width 0.1s ease-out;
+            overflow: hidden;
+        }
+        .sidebar.collapsed { 
+            width: 0 !important; 
+            min-width: 0 !important;
+            border: none; 
+        }
+        
+        .sidebar-title {
+            padding: 10px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 35px;
+            min-height: 35px;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            color: #bbb;
+            border-bottom: 1px solid var(--border);
+            height: 30px;
+            min-height: 30px;
+        }
+        .section-header:hover { color: #fff; background-color: #2a2d2e; }
+        .section-header svg { 
+            width: 14px; 
+            height: 14px; 
+            margin-right: 5px; 
+            transition: transform 0.2s; 
+            flex-shrink: 0;
+        }
+        .section-header.collapsed svg { transform: rotate(-90deg); }
+
+        .file-tree { 
+            overflow-y: auto; 
+            flex: 1; 
+            padding: 5px 0;
+        }
+        
+        .file-item {
+            padding: 4px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 24px;
+        }
+        .file-item:hover { background-color: #2a2d2e; }
+        .file-item.active { background-color: #37373d; color: #fff; }
+        .file-indent { margin-left: 10px; }
+        .file-item .folder-arrow {
+            width: 14px;
+            display: inline-block;
+            text-align: center;
+            margin-right: 4px;
+            color: #dcb67a;
+            font-size: 10px;
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            min-width: 300px;
+        }
+
+        /* --- Code Column --- */
+        .code-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            position: relative;
+        }
+
+        /* Tabs */
+        .tabs-header {
+            display: flex;
+            background-color: var(--bg-panel);
+            overflow-x: auto;
+            flex-shrink: 0;
+            height: 35px;
+            min-height: 35px;
+            border-bottom: 1px solid var(--border);
+        }
+        .tabs-header::-webkit-scrollbar { 
+            height: 2px; 
+            background: transparent;
+        }
+        .tabs-header::-webkit-scrollbar-thumb {
+            background: var(--accent);
+        }
+        
+        .tab {
+            padding: 0 15px;
+            height: 100%;
+            background-color: var(--bg-inactive-tab);
+            color: #969696;
+            cursor: pointer;
+            border-right: 1px solid #252526;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            max-width: 200px;
+            font-size: 13px;
+            position: relative;
+        }
+        .tab.active { 
+            background-color: var(--bg-dark); 
+            color: #fff; 
+            border-bottom: 1px solid var(--bg-dark);
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--bg-dark);
+        }
+        .tab-close { 
+            font-size: 16px; 
+            border-radius: 3px; 
+            padding: 0 4px;
+            margin-left: auto;
+        }
+        .tab-close:hover { background-color: #444; color: #fff; }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            height: 30px;
+            background-color: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #888;
+            border-bottom: 1px solid #2b2b2b;
+            justify-content: space-between;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .download-json-btn { 
+            background-color: #007fd4; 
+            color: white; 
+            border: none;
+            padding: 4px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .download-json-btn:hover { background-color: #005a9e; }
+
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+            background-color: var(--bg-dark);
+        }
+        
+        textarea.editor {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            color: #d4d4d4;
+            border: none;
+            resize: none;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            outline: none;
+            tab-size: 4;
+        }
+
+        /* --- Bottom Panel --- */
+        .bottom-panel {
+            height: 200px;
+            min-height: 100px;
+            max-height: 80vh;
+            background-color: var(--bg-dark);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            height: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 25px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            border-bottom: 1px solid #2b2b2b;
+            flex-shrink: 0;
+        }
+        
+        .panel-tab { 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            padding: 4px 0;
+            position: relative;
+        }
+        .panel-tab:hover { color: #ccc; }
+        .panel-tab.active { color: #fff; }
+        .panel-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #fff;
+        }
+        
+        .panel-badge {
+            background-color: #4d4d4d;
+            color: white;
+            border-radius: 10px;
+            padding: 0 6px;
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        #terminal-container { 
+            flex: 1; 
+            padding: 5px; 
+            background: var(--bg-dark); 
+            overflow: hidden; 
+        }
+
+        /* --- Preview Column --- */
+        .preview-column {
+            width: 45%;
+            min-width: 200px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border);
+            position: relative;
+        }
+
+        .browser-bar {
+            height: 36px;
+            background-color: #252526;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+            border-bottom: 1px solid #3c3c3c;
+            flex-shrink: 0;
+        }
+        
+        .browser-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .browser-actions svg {
+            color: #ccc;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            stroke-width: 2;
+        }
+        .browser-actions svg:hover { color: #fff; }
+        
+        .browser-close-btn {
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: none;
+        }
+        .browser-close-btn:hover {
+            background-color: #3c3c3c;
+            color: #fff;
+        }
+
+        .address-bar {
+            flex: 1;
+            background-color: #3c3c3c;
+            border-radius: 3px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: #ccc;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #preview-mount-point {
+            flex: 1;
+            width: 100%;
+            background-color: white;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        /* --- Resizers --- */
+                /* --- Resizers --- */
+        .resizer-h {
+            height: 4px; 
+            background: transparent; 
+            cursor: row-resize; 
+            z-index: 10;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .resizer-h:hover, .resizer-h:active { 
+            background: var(--resizer-hover); 
+        }
+        
+        .resizer-v {
+            width: 4px; 
+            background: transparent; 
+            cursor: col-resize; 
+            z-index: 10;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .resizer-v:hover, .resizer-v:active { 
+            background: var(--resizer-hover); 
+        }
+        
+        /* Prevent dragging of resizers */
+        .resizer-h, .resizer-v {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            -user-drag: none;
+        }
+
+        /* Context Menu */
+        .context-menu {
+            display: none; 
+            position: fixed; 
+            z-index: 9999;
+            width: 160px; 
+            background: #252526; 
+            border: 1px solid #454545;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5); 
+            padding: 4px 0;
+        }
+        
+        .context-menu-item { 
+            padding: 8px 12px; 
+            color: #ccc; 
+            cursor: pointer; 
+            display: flex; 
+            font-size: 13px; 
+        }
+        .context-menu-item:hover { background: #094771; color: #fff; }
+        .context-menu-separator { 
+            height: 1px; 
+            background: #454545; 
+            margin: 4px 0; 
+}
+        .context-menu-item.disabled { 
+            color: #666; 
+            pointer-events: none; 
+        }
+
+        /* Loading Spinner */
+        .loading {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007fd4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="activity-bar">
+    <div class="activity-icon active" title="Explorer" onclick="toggleSidebar()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h18v18H3zM9 3v18"/></svg>
+    </div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-title">
+        <span>EXPLORER</span>
+        <div style="display: flex; gap: 10px;">
+            <span onclick="addNewFilePrompt()" title="New File" style="cursor: pointer; font-size:14px;">+</span>
+            <span onclick="refreshFileTree()" title="Refresh" style="cursor: pointer; font-size:14px;">↻</span>
+        </div>
+    </div>
+    
+    <div class="sidebar-section">
+        <div class="section-header" onclick="toggleSection(this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            <span>PROJECT FILES</span>
+        </div>
+        <div class="file-tree" id="fileTree">
+            <!-- File tree will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<div class="resizer-v" id="resizer-sidebar"></div>
+
+<div class="main-content">
+    <div class="code-column" id="code-column">
+        <div class="tabs-header" id="tabsHeader">
+            <!-- Tabs will be rendered here -->
+        </div>
+        
+        <div class="breadcrumbs">
+            <div>
+                <span>root</span>
+                <span style="margin: 0 5px;">&gt;</span>
+                <span id="breadcrumb-file">app.py</span>
+            </div>
+            <div class="editor-actions">
+                <button id="downloadJsonBtn" class="download-json-btn" onclick="downloadFileAsJson()">Download JSON</button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea class="editor" id="codeEditor" spellcheck="false" oninput="saveCurrentState()"></textarea>
+        </div>
+
+        <div class="resizer-h" id="resizer-terminal"></div>
+
+        <div class="bottom-panel" id="bottom-panel">
+            <div class="panel-header">
+                <div style="display:flex; gap: 20px;">
+                    <span class="panel-tab" onclick="switchPanel('problems')">PROBLEMS <span class="panel-badge">0</span></span>
+                    <span class="panel-tab" onclick="switchPanel('output')">OUTPUT</span>
+                    <span class="panel-tab active" onclick="switchPanel('terminal')">TERMINAL</span>
+                </div>
+            </div>
+            <div id="terminal-container" style="display: block;"></div>
+            <div id="output-container" style="display: none; padding: 10px; overflow-y: auto;"></div>
+            <div id="problems-container" style="display: none; padding: 10px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div class="resizer-v" id="resizer-preview"></div>
+
+    <div class="preview-column" id="preview-column">
+        <div class="browser-bar">
+            <div class="browser-actions">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="browserBack()"><path d="M15 18l-6-6 6-6"/></svg>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="browserForward()"><path d="M9 18l6-6-6-6"/></svg>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="loadPreview()"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span id="close-server-btn" class="browser-close-btn" onclick="closeServerPreview()" title="Close Server">×</span>
+            </div>
+            <div class="address-bar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px; flex-shrink: 0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span id="browser-url">http://localhost:8000/</span>
+            </div>
+        </div>
+        <div id="preview-mount-point">
+            <div style="text-align: center; padding: 20px;">
+                <h1 style="color: #666; margin-bottom: 20px;">WELCOME TO IDE</h1>
+                <p style="color: #888; font-size: 14px;">Open a file to start editing</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="contextMenu" class="context-menu">
+    <div id="ctx-rename" class="context-menu-item" onclick="handleMenuAction('rename')">Rename</div>
+    <div id="ctx-delete" class="context-menu-item" onclick="handleMenuAction('delete')">Delete</div>
+    <div class="context-menu-separator"></div>
+    <div id="ctx-cut" class="context-menu-item" onclick="handleMenuAction('cut')">Cut</div>
+    <div id="ctx-copy" class="context-menu-item" onclick="handleMenuAction('copy')">Copy</div>
+    <div id="ctx-paste" class="context-menu-item" onclick="handleMenuAction('paste')">Paste</div>
+    <div class="context-menu-separator"></div>
+    <div id="ctx-new-file" class="context-menu-item" onclick="handleMenuAction('newFile')">New File</div>
+    <div id="ctx-new-folder" class="context-menu-item" onclick="handleMenuAction('newFolder')">New Folder</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+
+<script>
+    // --- Initial Data ---
+    const files = {
+        'views.py': `from django.shortcuts import render\ndef home(request):\n    return render(request, 'index.html', {'message': 'Hello from Cloud!'})`,
+        'urls.py': `from django.urls import path\nfrom . import views\nurlpatterns = [\n    path('', views.home, name='home'),\n]`,
+        'settings.py': `# Django Settings\nINSTALLED_APPS = [\n    'django.contrib.admin',\n    'django.contrib.auth',\n]`,
+        'index.html': `<!DOCTYPE html>\n<html>\n<head>\n    <title>My App</title>\n    <style>\n        body { font-family: Arial, sans-serif; padding: 20px; }\n        h1 { color: #007fd4; }\n    </style>\n</head>\n<body>\n    <h1>This is a simple HTML + CSS template!</h1>\n    <p>Welcome to the Cloud IDE</p>\n</body>\n</html>`,
+        'manage.py': `#!/usr/bin/env python\nimport os\nimport sys\n\ndef main():\n    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')\n    try:\n        from django.core.management import execute_from_command_line\n    except ImportError as exc:\n        raise ImportError(\n            "Couldn't import Django. Are you sure it's installed?"\n        ) from exc\n    execute_from_command_line(sys.argv)\n\nif __name__ == '__main__':\n    main()`,
+        'app.py': `import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+st.set_page_config(page_title="Data Science Environment", layout="wide")
+st.title("Data Science Environment")
+st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAssembly!")`
+
+    };
+
+    let folders = new Set(['migrations', 'static', 'templates']);
+    let openFiles = ['app.py'];
+    let activeFile = 'app.py';
+    let currentPath = '~/mysite';
+    let rootName = 'mysite';
+    let installedPackages = new Set(['Django', 'pip', 'streamlit', 'pandas', 'numpy', 'matplotlib', 'seaborn']);
+    let expandedFolders = new Set(['', 'migrations', 'static', 'templates']);
+    let commandHistory = [];
+    let historyIndex = 0;
+    let contextTarget = { path: null, type: null };
+    let clipboard = { op: null, path: null, type: null };
+    let currentPanel = 'terminal';
+    
+    // --- SERVER STATE VARIABLES ---
+    let serverRunning = false;
+    let serverType = null; // 'streamlit', 'django', or null
+    let serverUrl = 'http://localhost:8000/';
+    let serverIframe = null;
+    let currentDjangoProject = null;
+    let serverFile = null; // Track which file is running the server
+
+    // --- DOM Elements ---
+    const editor = document.getElementById('codeEditor');
+    const tabsHeader = document.getElementById('tabsHeader');
+    const fileTree = document.getElementById('fileTree');
+    const contextMenu = document.getElementById('contextMenu');
+    const breadcrumbFile = document.getElementById('breadcrumb-file');
+    const sidebar = document.getElementById('sidebar');
+    const browserUrl = document.getElementById('browser-url');
+    const terminalContainer = document.getElementById('terminal-container');
+    const outputContainer = document.getElementById('output-container');
+    const problemsContainer = document.getElementById('problems-container');
+    const closeServerBtn = document.getElementById('close-server-btn');
+
+    let term, fitAddon;
+
+    // --- Helper function to get Django homepage content ---
+    function getDjangoHomepage() {
+        if (!currentDjangoProject) {
+            return null;
+        }
+
+        // Check for project-level template
+        const projectTemplate = `${currentDjangoProject}/templates/index.html`;
+        if (files[projectTemplate]) {
+            return files[projectTemplate];
+        }
+
+        // Check for app-level templates
+        const appTemplateKeys = Object.keys(files).filter(key => 
+            key.startsWith(currentDjangoProject + '/') && 
+            key.includes('templates') && 
+            key.endsWith('index.html')
+        );
+
+        if (appTemplateKeys.length > 0) {
+            // Return the first one found
+            return files[appTemplateKeys[0]];
+        }
+
+        return null;
+    }
+
+    // --- JSON Download Logic ---
+    function downloadFileAsJson() {
+        if (!activeFile) {
+            alert('No active file to download');
+            return;
+        }
+
+        const fileData = {
+            filename: activeFile,
+            timestamp: new Date().toISOString(),
+            code: files[activeFile] || editor.value,
+            project: rootName,
+            type: activeFile.split('.').pop()
+        };
+
+        const blob = new Blob([JSON.stringify(fileData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        link.href = url;
+        link.download = `${activeFile.replace(/[^a-z0-9.]/gi, '_')}_${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // --- Initialize ---
+    window.onload = function() {
+        restoreSession();
+        initTerminal();
+        renderFileTree();
+        renderTabs();
+        
+        if (files[activeFile] !== undefined) {
+            editor.value = files[activeFile];
+        } else {
+            editor.value = '';
+        }
+        
+        setupResizers();
+        updatePreview();
+        
+        // Close context menu on global click
+        document.addEventListener('click', (e) => {
+            if (contextMenu && !contextMenu.contains(e.target)) {
+                contextMenu.style.display = 'none';
+            }
+        });
+        
+        // Close context menu on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                contextMenu.style.display = 'none';
+            }
+        });
+        
+        // Prevent default context menu on file tree
+        fileTree.addEventListener('contextmenu', e => e.preventDefault());
+        
+        // Auto-save when editor loses focus
+        editor.addEventListener('blur', saveCurrentState);
+        
+        // Handle tab key in editor
+        editor.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                
+                // Insert tab
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                
+                // Move cursor
+                this.selectionStart = this.selectionEnd = start + 4;
+                
+                // Trigger input event for save
+                this.dispatchEvent(new Event('input'));
+            }
+        });
+    };
+
+    // --- Update Close Button ---
+    function updateCloseButton() {
+        if (serverRunning) {
+            closeServerBtn.style.display = 'inline-block';
+        } else {
+            closeServerBtn.style.display = 'none';
+        }
+    }
+
+    // --- Session Persistence ---
+    function saveSession() {
+        try {
+            localStorage.setItem('ide_activeFile', activeFile);
+            localStorage.setItem('ide_openFiles', JSON.stringify(openFiles));
+            localStorage.setItem('ide_expandedFolders', JSON.stringify(Array.from(expandedFolders)));
+            // Save server state
+            localStorage.setItem('ide_serverRunning', serverRunning);
+            localStorage.setItem('ide_serverType', serverType || '');
+            localStorage.setItem('ide_serverUrl', serverUrl);
+            localStorage.setItem('ide_djangoProject', currentDjangoProject || '');
+            localStorage.setItem('ide_serverFile', serverFile || '');
+        } catch (e) {
+            console.warn('Failed to save session:', e);
+        }
+    }
+
+    function restoreSession() {
+        try {
+            const storedActive = localStorage.getItem('ide_activeFile');
+            const storedOpen = localStorage.getItem('ide_openFiles');
+            const storedExpanded = localStorage.getItem('ide_expandedFolders');
+            const storedServerRunning = localStorage.getItem('ide_serverRunning');
+            const storedServerType = localStorage.getItem('ide_serverType');
+            const storedServerUrl = localStorage.getItem('ide_serverUrl');
+            const storedDjangoProject = localStorage.getItem('ide_djangoProject');
+            const storedServerFile = localStorage.getItem('ide_serverFile');
+            
+            if (storedActive && files[storedActive] !== undefined) {
+                activeFile = storedActive;
+            }
+            
+            if (storedOpen) {
+                const parsed = JSON.parse(storedOpen);
+                openFiles = parsed.filter(f => files[f] !== undefined);
+                if (openFiles.length === 0 && files['app.py']) {
+                    openFiles = ['app.py'];
+                }
+            }
+            
+            if (storedExpanded) {
+                expandedFolders = new Set(JSON.parse(storedExpanded));
+            }
+            
+            // Restore server state
+            if (storedServerRunning === 'true') {
+                serverRunning = true;
+                serverType = storedServerType || null;
+                serverUrl = storedServerUrl || 'http://localhost:8000/';
+                currentDjangoProject = storedDjangoProject || null;
+                serverFile = storedServerFile || null;
+                
+                // Update UI
+                browserUrl.innerText = serverUrl;
+                updateCloseButton();
+                
+                // Show loading for server
+                const mountPoint = document.getElementById('preview-mount-point');
+                mountPoint.innerHTML = '<div class="loading"></div><p style="margin-top: 10px;">Restoring server session...</p>';
+            }
+        } catch (e) {
+            console.warn('Failed to restore session:', e);
+        }
+    }
+
+    // --- Terminal & Command Logic ---
+    function initTerminal() {
+        if (term) {
+            term.dispose();
+        }
+        
+        term = new Terminal({
+            cursorBlink: true,
+            theme: { 
+                background: '#1e1e1e', 
+                foreground: '#cccccc',
+                cursor: '#ffffff'
+            },
+            fontFamily: 'Menlo, Monaco, "Courier New", monospace', 
+            fontSize: 13,
+            lineHeight: 1.2,
+            scrollback: 1000
+        });
+        
+        fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(terminalContainer);
+        fitAddon.fit();
+        
+        term.writeln('\x1b[1;34m=== Cloud IDE Terminal v3.1 ===\x1b[0m');
+        term.writeln('Type "help" for available commands');
+        term.writeln('');
+        prompt();
+
+        let currentLine = '';
+        let isPromptActive = false;
+        
+        term.onKey(e => {
+            const ev = e.domEvent;
+            
+            if (ev.key === 'Enter') {
+                if (isPromptActive) return;
+                
+                term.writeln('');
+                if (currentLine.trim().length > 0) {
+                    commandHistory.push(currentLine);
+                    historyIndex = commandHistory.length;
+                }
+                processCommand(currentLine);
+                currentLine = '';
+                isPromptActive = true;
+                setTimeout(() => {
+                    isPromptActive = false;
+                    prompt();
+                }, 10);
+            } 
+            else if (ev.key === 'Backspace') {
+                if (currentLine.length > 0) {
+                    currentLine = currentLine.slice(0, -1);
+                    term.write('\b \b');
+                }
+            }
+            else if (ev.key === 'ArrowUp') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    // Clear current line
+                    term.write('\x1b[2K\r');
+                    prompt();
+                    currentLine = commandHistory[historyIndex];
+                    term.write(currentLine);
+                }
+            }
+            else if (ev.key === 'ArrowDown') {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    term.write('\x1b[2K\r');
+                    prompt();
+                    currentLine = commandHistory[historyIndex];
+                    term.write(currentLine);
+                } else if (historyIndex === commandHistory.length - 1) {
+                    historyIndex = commandHistory.length;
+                    term.write('\x1b[2K\r');
+                    prompt();
+                    currentLine = '';
+                }
+            }
+            else if (ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey) {
+                currentLine += ev.key;
+                term.write(ev.key);
+            }
+        });
+        
+        // Handle resize
+        new ResizeObserver(() => fitAddon.fit()).observe(terminalContainer);
+    }
+
+    function prompt() {
+        term.write(`\x1b[1;32muser@ide\x1b[0m:\x1b[1;34m${currentPath}\x1b[0m$ `);
+    }
+
+    function resolvePath(inputPath) {
+        if (!inputPath) return '';
+        
+        let base = currentPath.replace('~/mysite', '').replace(/^\//, '');
+        
+        if (inputPath === '..') {
+            if (!base) return '';
+            const parts = base.split('/');
+            parts.pop();
+            return parts.join('/');
+        }
+        
+        if (inputPath === '.' || inputPath === './') return base;
+        if (inputPath.startsWith('/')) return inputPath.substring(1);
+        if (inputPath.startsWith('~/')) return inputPath.substring(2);
+        
+        return base ? `${base}/${inputPath}` : inputPath;
+    }
+
+    function processCommand(cmd) {
+        const trimmedCmd = cmd.trim();
+        if (!trimmedCmd) return;
+        
+        const parts = trimmedCmd.split(/\s+/);
+        const command = parts[0].toLowerCase();
+        const args = parts.slice(1);
+
+        switch (command) {
+            case 'help':
+                term.writeln('\x1b[1mAvailable commands:\x1b[0m');
+                term.writeln('  ls, cd, pwd, mkdir, touch, rm, cp, mv, cat');
+                term.writeln('  python, pip, django-admin, streamlit, clear');
+                term.writeln('  help - Show this help message');
+                break;
+                
+            case 'ls':
+                const currentDir = getInternalCwd();
+                const items = [];
+                
+                // Add folders
+                folders.forEach(f => {
+                    if (f.startsWith(currentDir) && f !== currentDir) {
+                        const relative = f.substring(currentDir.length).split('/')[0];
+                        if (relative && !items.includes(relative + '/')) {
+                            items.push(relative + '/');
+                        }
+                    }
+                });
+                
+                // Add files
+                Object.keys(files).forEach(f => {
+                    if (f.startsWith(currentDir) && f !== currentDir) {
+                        const relative = f.substring(currentDir.length).split('/')[0];
+                        if (relative && !items.includes(relative)) {
+                            items.push(relative);
+                        }
+                    }
+                });
+                
+                // Sort and display
+                items.sort((a, b) => {
+                    const aIsFolder = a.endsWith('/');
+                    const bIsFolder = b.endsWith('/');
+                    if (aIsFolder && !bIsFolder) return -1;
+                    if (!aIsFolder && bIsFolder) return 1;
+                    return a.localeCompare(b);
+                });
+                
+                if (items.length === 0) {
+                    term.writeln('(empty)');
+                } else {
+                    let output = '';
+                    items.forEach(item => {
+                        if (item.endsWith('/')) {
+                            output += `\x1b[34m${item}\x1b[0m  `;
+                        } else if (item.endsWith('.py')) {
+                            output += `\x1b[36m${item}\x1b[0m  `;
+                        } else if (item.endsWith('.html') || item.endsWith('.css')) {
+                            output += `\x1b[33m${item}\x1b[0m  `;
+                        } else {
+                            output += `${item}  `;
+                        }
+                    });
+                    term.writeln(output);
+                }
+                break;
+                
+            case 'pwd':
+                term.writeln(currentPath);
+                break;
+                
+            case 'cd':
+                const target = args[0] || '~';
+                if (target === '~') {
+                    currentPath = '~/mysite';
+                } else {
+                    const resolved = resolvePath(target);
+                    if (folders.has(resolved) || resolved === '') {
+                        currentPath = `~/mysite/${resolved}`.replace(/\/$/, '');
+                    } else {
+                        term.writeln(`\x1b[31mcd: ${target}: No such directory\x1b[0m`);
+                    }
+                }
+                break;
+                
+            case 'mkdir':
+                if (args[0]) {
+                    const newDir = resolvePath(args[0]);
+                    if (folders.has(newDir)) {
+                        term.writeln(`mkdir: cannot create directory '${args[0]}': File exists`);
+                    } else {
+                        folders.add(newDir);
+                        expandedFolders.add(newDir);
+                        renderFileTree();
+                        term.writeln(`Created directory '${args[0]}'`);
+                    }
+                } else {
+                    term.writeln('mkdir: missing operand');
+                }
+                break;
+                
+            case 'touch':
+                if (args[0]) {
+                    const newFile = resolvePath(args[0]);
+                    if (files[newFile]) {
+                        term.writeln(`touch: cannot touch '${args[0]}': File exists`);
+                    } else {
+                        files[newFile] = '';
+                        renderFileTree();
+                        term.writeln(`Created file '${args[0]}'`);
+                    }
+                } else {
+                    term.writeln('touch: missing file name');
+                }
+                break;
+                
+            case 'rm':
+                if (args[0]) {
+                    const targetPath = resolvePath(args[0]);
+                    if (files[targetPath]) {
+                        delete files[targetPath];
+                        
+                        // Remove from open files
+                        const index = openFiles.indexOf(targetPath);
+                        if (index > -1) {
+                            openFiles.splice(index, 1);
+                            if (activeFile === targetPath) {
+                                activeFile = openFiles[0] || null;
+                                editor.value = activeFile ? files[activeFile] : '';
+                                renderTabs();
+                                updatePreview();
+                            }
+                        }
+                        
+                        renderFileTree();
+                        term.writeln(`Removed '${args[0]}'`);
+                    } else if (folders.has(targetPath)) {
+                        // Check if folder is empty
+                        let hasContents = false;
+                        for (let f of folders) {
+                            if (f.startsWith(targetPath + '/')) {
+                                hasContents = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!hasContents) {
+                            folders.delete(targetPath);
+                            expandedFolders.delete(targetPath);
+                            renderFileTree();
+                            term.writeln(`Removed directory '${args[0]}'`);
+                        } else {
+                            term.writeln(`rm: cannot remove '${args[0]}': Directory not empty`);
+                        }
+                    } else {
+                        term.writeln(`rm: cannot remove '${args[0]}': No such file or directory`);
+                    }
+                } else {
+                    term.writeln('rm: missing operand');
+                }
+                break;
+                
+            case 'cat':
+                if (args[0]) {
+                    const targetPath = resolvePath(args[0]);
+                    if (files[targetPath] !== undefined) {
+                        term.writeln('\x1b[90m' + '-'.repeat(50) + '\x1b[0m');
+                        term.writeln(files[targetPath]);
+                        term.writeln('\x1b[90m' + '-'.repeat(50) + '\x1b[0m');
+                    } else {
+                        term.writeln(`cat: ${args[0]}: No such file`);
+                    }
+                } else {
+                    term.writeln('cat: missing file name');
+                }
+                break;
+                
+            case 'python':
+                if (args[0] === 'manage.py') {
+                    if (args[1] === 'runserver') {
+                        term.writeln('\x1b[32mStarting development server at http://127.0.0.1:8000/\x1b[0m');
+                        term.writeln('Quit the server with CTRL-C.');
+                        
+                        // Start Django server
+                        runDjangoServer();
+                        
+                    } else if (args[1] === 'migrate') {
+                        term.writeln('Operations to perform:');
+                        term.writeln('  Apply all migrations: admin, auth, contenttypes, sessions');
+                        term.writeln('Running migrations:');
+                        term.writeln('  Applying contenttypes.0001_initial... OK');
+                        term.writeln('  Applying auth.0001_initial... OK');
+                        term.writeln('  Applying admin.0001_initial... OK');
+                        term.writeln('  Applying sessions.0001_initial... OK');
+                        term.writeln('Creating SQLite database file: db.sqlite3');
+                        term.writeln('\x1b[32mMigrations completed successfully.\x1b[0m');
+                        
+                        // Create db.sqlite3 file
+                        files['db.sqlite3'] = '[SQLite Database File]';
+                        renderFileTree();
+                        
+                    } else if (args[1] === 'startapp' && args[2]) {
+                        const appName = args[2];
+                        const projectPath = getCurrentProjectPath();
+                        
+                        if (!projectPath) {
+                            term.writeln('\x1b[31mError: Not in a Django project directory\x1b[0m');
+                            break;
+                        }
+                        
+                        const appPath = `${projectPath}/${appName}`;
+                        folders.add(appPath);
+                        folders.add(`${appPath}/migrations`);
+                        
+                        // Create app files
+                        files[`${appPath}/__init__.py`] = '';
+                        files[`${appPath}/admin.py`] = `from django.contrib import admin\nfrom .models import *\n\n# Register your models here`;
+                        files[`${appPath}/apps.py`] = `from django.apps import AppConfig\n\nclass ${appName.charAt(0).toUpperCase() + appName.slice(1)}Config(AppConfig):\n    default_auto_field = 'django.db.models.BigAutoField'\n    name = '${appName}'`;
+                        files[`${appPath}/models.py`] = `from django.db import models\n\n# Create your models here\nclass ExampleModel(models.Model):\n    name = models.CharField(max_length=100)\n    created_at = models.DateTimeField(auto_now_add=True)\n\n    def __str__(self):\n        return self.name`;
+                        files[`${appPath}/tests.py`] = `from django.test import TestCase\n\n# Create your tests here`;
+                        files[`${appPath}/views.py`] = `from django.shortcuts import render\nfrom django.http import HttpResponse\n\n# Create your views here\ndef index(request):\n    return HttpResponse("Hello from ${appName} app!")`;
+                        
+                        // Create app urls.py
+                        files[`${appPath}/urls.py`] = `from django.urls import path\nfrom . import views\n\nurlpatterns = [\n    path('', views.index, name='index'),\n]`;
+                        
+                        // Create templates directory and index.html for the app
+                        const templatePath = `${appPath}/templates/${appName}`;
+                        folders.add(`${appPath}/templates`);
+                        folders.add(templatePath);
+                        
+                        files[`${templatePath}/index.html`] = `<!DOCTYPE html>
+<html>
+<head>
+    <title>${appName} - Django App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #007fd4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to ${appName}!</h1>
+        <p>This is your Django app's homepage.</p>
+        <p>Created in Cloud IDE 🚀</p>
+    </div>
+</body>
+</html>`;
+                        
+                        // Update project urls.py to include the app
+                        const projectName = projectPath.split('/').pop();
+                        const mainUrlsPath = `${projectPath}/${projectName}/urls.py`;
+                        if (files[mainUrlsPath]) {
+                            files[mainUrlsPath] = files[mainUrlsPath].replace(
+                                'urlpatterns = [',
+                                `from django.contrib import admin\nfrom django.urls import path, include\n\nurlpatterns = [\n    path('${appName}/', include('${appName}.urls')),`
+                            );
+                        }
+                        
+                        // Update project settings.py to include the app
+                        const settingsPath = `${projectPath}/${projectName}/settings.py`;
+                        if (files[settingsPath]) {
+                            if (files[settingsPath].includes("INSTALLED_APPS = [")) {
+                                files[settingsPath] = files[settingsPath].replace(
+                                    "INSTALLED_APPS = [",
+                                    `INSTALLED_APPS = [\n    '${appName}',`
+                                );
+                            }
+                        }
+                        
+                        renderFileTree();
+                        term.writeln(`\x1b[32mCreated app '${appName}'\x1b[0m`);
+                                                term.writeln(`\x1b[33mTemplate created: ${templatePath}/index.html\x1b[0m`);
+                        
+                    } else if (args[1] === 'createsuperuser') {
+                        term.writeln('Username (leave blank to use current user): admin');
+                        term.writeln('Email address: admin@example.com');
+                        term.writeln('Password: ********');
+                        term.writeln('Password (again): ********');
+                        term.writeln('Superuser created successfully.');
+                        
+                    } else {
+                        term.writeln('Available manage.py commands:');
+                        term.writeln('  runserver       - Start development server');
+                        term.writeln('  migrate         - Apply database migrations');
+                        term.writeln('  startapp <name> - Create new Django app');
+                        term.writeln('  createsuperuser - Create admin user');
+                    }
+                } else {
+                    term.writeln('Python 3.9.1 (default, Jan  8 2021, 16:15:59)');
+                    term.writeln('[GCC 9.3.0] on linux');
+                    term.writeln('Type "help", "copyright", "credits" or "license" for more information.');
+                }
+                break;
+                
+            case 'pip':
+                if (args[0] === 'install' && args[1]) {
+                    term.writeln(`Collecting ${args[1]}`);
+                    term.writeln('Downloading...');
+                    setTimeout(() => {
+                        installedPackages.add(args[1]);
+                        term.writeln(`Successfully installed ${args[1]}`);
+                    }, 800);
+                } else if (args[0] === 'list') {
+                    term.writeln('Installed packages:');
+                    Array.from(installedPackages).forEach(pkg => {
+                        term.writeln(`  ${pkg}`);
+                    });
+                } else {
+                    term.writeln('Usage: pip install <package>');
+                }
+                break;
+                
+            case 'django-admin':
+                if (args[0] === 'startproject' && args[1]) {
+                    const projName = args[1];
+                    folders.add(projName);
+                    
+                    // Create project structure
+                    files[`${projName}/manage.py`] = `#!/usr/bin/env python
+"""Django's command-line utility for administrative tasks.""" 
+import os
+import sys
+
+def main():
+    """Run administrative tasks."""
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${projName}.settings')
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed?"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+if __name__ == '__main__':
+    main()`;
+                    
+                    // Create project folder
+                    const projectFolder = `${projName}/${projName}`;
+                    folders.add(projectFolder);
+                    
+                    // Create settings.py
+                    files[`${projectFolder}/__init__.py`] = '';
+                    files[`${projectFolder}/settings.py`] = `"""
+Django settings for ${projName} project.
+"""
+
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Quick-start development settings - unsuitable for production
+SECRET_KEY = 'django-insecure-your-secret-key-here'
+DEBUG = True
+ALLOWED_HOSTS = []
+
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = '${projName}.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = '${projName}.wsgi.application'
+
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = 'static/'
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'`;
+                    
+                    // Create urls.py
+                    files[`${projectFolder}/urls.py`] = `"""
+URL configuration for ${projName} project.
+"""
+from django.contrib import admin
+from django.urls import path
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+]`;
+                    
+                    // Create wsgi.py
+                    files[`${projectFolder}/wsgi.py`] = `"""
+WSGI config for ${projName} project.
+"""
+
+import os
+
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${projName}.settings')
+
+application = get_wsgi_application()`;
+                    
+                    // Create asgi.py
+                    files[`${projectFolder}/asgi.py`] = `"""
+ASGI config for ${projName} project.
+"""
+
+import os
+
+from django.core.asgi import get_asgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${projName}.settings')
+
+application = get_asgi_application()`;
+                    
+                    // Create templates and static folders
+                    folders.add(`${projName}/templates`);
+                    folders.add(`${projName}/static`);
+                    
+                    renderFileTree();
+                    term.writeln(`\x1b[32mCreated project '${projName}'\x1b[0m`);
+                    term.writeln(`Use 'cd ${projName}' to enter the project directory`);
+                    
+                    // Set current Django project
+                    currentDjangoProject = projName;
+                    
+                } else if (args[0] === 'help') {
+                    term.writeln('Available django-admin commands:');
+                    term.writeln('  startproject <name> - Create new Django project');
+                    term.writeln('  startapp <name>    - Create new Django app');
+                    term.writeln('  check              - Check project for problems');
+                    term.writeln('  migrate            - Apply database migrations');
+                } else {
+                    term.writeln(`Unknown command: '${args[0]}'`);
+                    term.writeln("Type 'django-admin help' for usage.");
+                }
+                break;
+                
+            case 'streamlit':
+                if (args[0] === 'run' && args[1]) {
+                    const targetFile = resolvePath(args[1]);
+                    if (files[targetFile] !== undefined) {
+                        term.writeln('\x1b[32mStarting Streamlit server...\x1b[0m');
+                        term.writeln('Loading dependencies via WebAssembly...');
+                        serverFile = targetFile; // Track which file is running the server
+                        runStlite(files[targetFile]);
+                    } else {
+                        term.writeln(`\x1b[31mError: File '${args[1]}' not found\x1b[0m`);
+                    }
+                }
+                break;
+                
+            case 'clear':
+                term.clear();
+                term.writeln('\x1b[1;34m=== Cloud IDE Terminal ===\x1b[0m');
+                break;
+                
+            default:
+                if (command) {
+                    term.writeln(`\x1b[31mCommand not found: ${command}\x1b[0m`);
+                    term.writeln('Type "help" for available commands');
+                }
+        }
+    }
+
+    function getInternalCwd() {
+        return currentPath.replace('~/mysite', '').replace(/^\//, '');
+    }
+    
+    function getCurrentProjectPath() {
+        const cwd = getInternalCwd();
+        if (cwd && files[`${cwd}/manage.py`]) {
+            return cwd;
+        }
+        
+        // Check parent directories
+        const parts = cwd.split('/');
+        for (let i = parts.length; i > 0; i--) {
+            const path = parts.slice(0, i).join('/');
+            if (files[`${path}/manage.py`]) {
+                return path;
+            }
+        }
+        
+        return null;
+    }
+
+    // --- Stlite Execution ---
+    function runStlite(code) {
+        const mountPoint = document.getElementById('preview-mount-point');
+        mountPoint.innerHTML = '<div class="loading"></div><p style="margin-top: 10px;">Loading Streamlit app...</p>';
+        
+        // Set server state
+        serverRunning = true;
+        serverType = 'streamlit';
+        serverUrl = 'http://localhost:8501/';
+        serverFile = serverFile || activeFile; // Use tracked file or active file
+        browserUrl.innerText = serverUrl;
+        updateCloseButton();
+        
+        setTimeout(() => {
+            const iframeContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamlit App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.58.0/build/stlite.js"><\/script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        #root { height: 100%; }
+        .stApp { margin-top: -60px; }
+        header { visibility: hidden; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        try {
+            stlite.mount({
+                requirements: ["streamlit", "pandas", "numpy", "matplotlib", "seaborn"],
+                entrypoint: "app.py",
+                files: { "app.py": ${JSON.stringify(code)} }
+            }, document.getElementById("root"));
+        } catch(e) {
+            document.body.innerHTML = '<div style="padding:20px;color:red;font-family:monospace;">Error: ' + e.message + '</div>';
+        }
+    <\/script>
+</body>
+</html>`;
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            
+            const blob = new Blob([iframeContent], { type: 'text/html' });
+            iframe.src = URL.createObjectURL(blob);
+            
+            mountPoint.innerHTML = '';
+            mountPoint.appendChild(iframe);
+            serverIframe = iframe;
+            saveSession();
+        }, 1000);
+    }
+    
+    // --- Django Server Execution ---
+    function runDjangoServer() {
+        const mountPoint = document.getElementById('preview-mount-point');
+        
+        // Try to find HTML template first
+        const homepageContent = getDjangoHomepage();
+        
+        if (homepageContent) {
+            // Show the HTML template instead of Django welcome page
+            mountPoint.innerHTML = '<div class="loading"></div><p style="margin-top: 10px;">Loading Django app template...</p>';
+            
+            setTimeout(() => {
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                
+                const blob = new Blob([homepageContent], { type: 'text/html' });
+                iframe.src = URL.createObjectURL(blob);
+                
+                mountPoint.innerHTML = '';
+                mountPoint.appendChild(iframe);
+                serverIframe = iframe;
+                
+                // Set server state
+                serverRunning = true;
+                serverType = 'django';
+                serverUrl = 'http://127.0.0.1:8000/';
+                serverFile = 'manage.py';
+                browserUrl.innerText = serverUrl;
+                updateCloseButton();
+                saveSession();
+                
+                term.writeln('\x1b[32m✓ Django development server is running!\x1b[0m');
+                term.writeln('\x1b[33m✓ Showing app template instead of Django welcome page\x1b[0m');
+            }, 1000);
+        } else {
+            // Fall back to original Django welcome page
+            mountPoint.innerHTML = '<div class="loading"></div><p style="margin-top: 10px;">Starting Django development server...</p>';
+            
+            // Set server state
+            serverRunning = true;
+            serverType = 'django';
+            serverUrl = 'http://127.0.0.1:8000/';
+            serverFile = 'manage.py';
+            browserUrl.innerText = serverUrl;
+            updateCloseButton();
+            
+            setTimeout(() => {
+                const djangoWelcome = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0c5460;
+            border-bottom: 3px solid #0c5460;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .success {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .code {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            overflow-x: auto;
+        }
+        .steps {
+            margin: 30px 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 20px;
+            border-left: 3px solid #0c5460;
+        }
+        .btn {
+            display: inline-block;
+            background: #0c5460;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 5px 0 0;
+        }
+        .btn:hover {
+            background: #0b4750;
+        }
+        .info-box {
+            background: #e2f3f5;
+            border-left: 4px solid #0c5460;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Django Development Server</h1>
+        
+        <div class="success">
+            <strong>✓ Django development server is running!</strong><br>
+            Server URL: <code>http://127.0.0.1:8000/</code>
+        </div>
+        
+        <div class="info-box">
+            <strong>Current Project:</strong> ${currentDjangoProject || 'Not in project directory'}<br>
+            <strong>Current Path:</strong> ${currentPath}
+        </div>
+        
+        <div class="steps">
+            <h3>Next Steps:</h3>
+            
+            <div class="step">
+                <strong>1. Create a Django app:</strong>
+                <div class="code">python manage.py startapp myapp</div>
+            </div>
+            
+            <div class="step">
+                <strong>2. Run migrations:</strong>
+                <div class="code">python manage.py migrate</div>
+            </div>
+            
+            <div class="step">
+                <strong>3. Create admin user:</strong>
+                <div class="code">python manage.py createsuperuser</div>
+            </div>
+            
+            <div class="step">
+                <strong>4. Access Django Admin:</strong>
+                <a href="http://127.0.0.1:8000/admin/" target="_blank" class="btn">Go to Admin</a>
+            </div>
+            
+            <div class="step">
+                <strong>5. Create HTML template:</strong>
+                <div class="code">Create templates/appname/index.html in your app</div>
+            </div>
+        </div>
+        
+        <div class="code">
+            <strong>Available URLs:</strong><br>
+            • <a href="http://127.0.0.1:8000/admin/" target="_blank">http://127.0.0.1:8000/admin/</a> - Django Admin<br>
+            • Edit <code>urls.py</code> to add custom URLs
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 14px; color: #666;">
+            <strong>Note:</strong> This is a simulated Django server for the IDE.<br>
+            Create an HTML template in your app to see it here instead of this welcome page.
+        </p>
+    </div>
+</body>
+</html>`;
+                
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                
+                const blob = new Blob([djangoWelcome], { type: 'text/html' });
+                iframe.src = URL.createObjectURL(blob);
+                
+                mountPoint.innerHTML = '';
+                mountPoint.appendChild(iframe);
+                serverIframe = iframe;
+                saveSession();
+            }, 1500);
+        }
+    }
+
+    // --- Close Server Preview ---
+    function closeServerPreview() {
+        const mountPoint = document.getElementById('preview-mount-point');
+        
+        if (serverType === 'streamlit') {
+            mountPoint.innerHTML = '<div style="text-align: center; padding: 20px;"><h1 style="color: #666; margin-bottom: 20px;">WELCOME TO IDE</h1><p style="color: #888; font-size: 14px;">Run "streamlit run app.py" to start Streamlit</p></div>';
+        } else if (serverType === 'django') {
+            mountPoint.innerHTML = '<div style="text-align: center; padding: 20px;"><h1 style="color: #666; margin-bottom: 20px;">WELCOME TO IDE</h1><p style="color: #888; font-size: 14px;">Run "python manage.py runserver" to start Django</p></div>';
+        } else {
+            mountPoint.innerHTML = '<div style="text-align: center; padding: 20px;"><h1 style="color: #666; margin-bottom: 20px;">WELCOME TO IDE</h1><p style="color: #888; font-size: 14px;">Open a file to start editing</p></div>';
+        }
+        
+        browserUrl.innerText = 'http://localhost:8000/';
+        serverRunning = false;
+        serverType = null;
+        serverFile = null;
+        updateCloseButton();
+        
+        // Clean up iframe
+        if (serverIframe) {
+            serverIframe.remove();
+            serverIframe = null;
+        }
+        saveSession();
+    }
+
+    // --- File Tree & Context Menu ---
+    function renderFileTree() {
+        const tree = { name: rootName, type: 'folder', children: {}, fullPath: '' };
+        
+        function insert(pathStr, type) {
+            const parts = pathStr.split('/');
+            let current = tree;
+            let currentPath = '';
+            
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                currentPath = currentPath ? `${currentPath}/${part}` : part;
+                
+                if (!current.children[part]) {
+                    current.children[part] = {
+                        name: part,
+                        type: i === parts.length - 1 ? type : 'folder',
+                        children: {},
+                        fullPath: currentPath
+                    };
+                }
+                
+                if (i < parts.length - 1 && current.children[part].type !== 'folder') {
+                    current.children[part].type = 'folder';
+                }
+                
+                current = current.children[part];
+            }
+        }
+        
+        // Insert folders
+        folders.forEach(f => insert(f, 'folder'));
+        
+        // Insert files
+        Object.keys(files).forEach(f => insert(f, 'file'));
+        
+        function renderNode(node, depth) {
+            const isRoot = depth === 0;
+            const isFolder = node.type === 'folder';
+            const isExpanded = expandedFolders.has(node.fullPath);
+            
+            let html = '';
+            const paddingLeft = depth * 15;
+            
+            // Folder arrow or file icon
+            let icon = '';
+            if (isFolder) {
+                icon = `<span class="folder-arrow">${isExpanded ? '▼' : '▶'}</span>`;
+            } else {
+                icon = `<span style="margin-right:5px;width:16px;display:inline-block;text-align:center;color:#ccc;">${getFileIcon(node.name)}</span>`;
+            }
+            
+            const isActive = node.type === 'file' && node.fullPath === activeFile;
+            const className = `file-item ${isActive ? 'active' : ''}`;
+            
+            html += `<div class="${className}" 
+                          style="padding-left: ${paddingLeft}px"
+                          onclick="${isFolder ? `toggleFolder('${node.fullPath}', event)` : `openFile('${node.fullPath}')`}"
+                          oncontextmenu="showContextMenu(event, '${node.fullPath}', '${node.type}')">
+                        ${icon}
+                        <span>${node.name}</span>
+                     </div>`;
+            
+            // Render children if folder is expanded
+            if (isFolder && isExpanded) {
+                const childKeys = Object.keys(node.children).sort((a, b) => {
+                    const nodeA = node.children[a];
+                    const nodeB = node.children[b];
+                    if (nodeA.type === nodeB.type) {
+                        return nodeA.name.localeCompare(nodeB.name);
+                    }
+                    return nodeA.type === 'folder' ? -1 : 1;
+                });
+                
+                childKeys.forEach(key => {
+                    html += renderNode(node.children[key], depth + 1);
+                });
+            }
+            
+            return html;
+        }
+        
+        fileTree.innerHTML = renderNode(tree, 0);
+        saveSession();
+    }
+
+    function toggleFolder(path, e) {
+        if (e) e.stopPropagation();
+        
+        if (expandedFolders.has(path)) {
+            expandedFolders.delete(path);
+        } else {
+            expandedFolders.add(path);
+        }
+        
+        renderFileTree();
+    }
+
+    function getFileIcon(filename) {
+        if (filename.endsWith('.py')) return '🐍';
+        if (filename.endsWith('.html')) return '🌐';
+        if (filename.endsWith('.css')) return '🎨';
+        if (filename.endsWith('.js')) return '📜';
+        if (filename.endsWith('.json')) return '📋';
+        if (filename === 'manage.py') return '⚙️';
+        if (filename === 'settings.py') return '🔧';
+        if (filename === 'urls.py') return '🔗';
+        if (filename === 'models.py') return '🗄️';
+        if (filename === 'views.py') return '👁️';
+        if (filename === 'db.sqlite3') return '💾';
+        return '📄';
+    }
+
+    function showContextMenu(e, path, type) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        contextTarget = { path, type };
+        
+        // Position menu
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${e.clientX}px`;
+        contextMenu.style.top = `${e.clientY}px`;
+        
+        // Update button states
+        const isRoot = path === '';
+        document.getElementById('ctx-rename').style.display = isRoot ? 'none' : 'flex';
+        document.getElementById('ctx-delete').style.display = isRoot ? 'none' : 'flex';
+        document.getElementById('ctx-cut').style.display = isRoot ? 'none' : 'flex';
+        document.getElementById('ctx-copy').style.display = isRoot ? 'none' : 'flex';
+        
+        const pasteBtn = document.getElementById('ctx-paste');
+        if (clipboard.path && clipboard.path !== path) {
+            pasteBtn.classList.remove('disabled');
+        } else {
+            pasteBtn.classList.add('disabled');
+        }
+    }
+
+    function handleMenuAction(action) {
+        contextMenu.style.display = 'none';
+        const targetPath = contextTarget.path;
+        const targetType = contextTarget.type;
+        
+        try {
+            switch (action) {
+                case 'rename':
+                    renameItem(targetPath, targetType);
+                    break;
+                case 'delete':
+                    deleteItem(targetPath, targetType);
+                    break;
+                case 'cut':
+                    clipboard = { op: 'cut', path: targetPath, type: targetType };
+                    break;
+                case 'copy':
+                    clipboard = { op: 'copy', path: targetPath, type: targetType };
+                    break;
+                case 'paste':
+                    pasteItem(targetPath);
+                    break;
+                case 'newFile':
+                    createNewFile(targetPath);
+                    break;
+                case 'newFolder':
+                    createNewFolder(targetPath);
+                    break;
+            }
+        } catch (e) {
+            console.error('Menu action error:', e);
+            alert('Error: ' + e.message);
+        }
+    }
+
+    function renameItem(oldPath, type) {
+        const oldName = oldPath.split('/').pop();
+        const newName = prompt('Enter new name:', oldName);
+        if (!newName || newName === oldName) return;
+        
+        const parts = oldPath.split('/');
+        parts.pop();
+        const parent = parts.join('/');
+        const newPath = parent ? `${parent}/${newName}` : newName;
+        
+        if (type === 'file') {
+            if (files[newPath]) {
+                alert('File already exists!');
+                return;
+            }
+            files[newPath] = files[oldPath];
+            delete files[oldPath];
+            
+            if (activeFile === oldPath) {
+                activeFile = newPath;
+                editor.value = files[newPath];
+            }
+            
+            const index = openFiles.indexOf(oldPath);
+            if (index > -1) {
+                openFiles[index] = newPath;
+            }
+            
+            // Update server file if it was renamed
+            if (serverFile === oldPath) {
+                serverFile = newPath;
+            }
+        } else {
+            // Rename folder
+            const newFolders = new Set();
+            const newFiles = {};
+            
+            folders.forEach(f => {
+                if (f === oldPath) {
+                    newFolders.add(newPath);
+                } else if (f.startsWith(oldPath + '/')) {
+                    newFolders.add(f.replace(oldPath, newPath));
+                } else {
+                    newFolders.add(f);
+                }
+            });
+            
+            Object.keys(files).forEach(f => {
+                if (f.startsWith(oldPath + '/')) {
+                    newFiles[f.replace(oldPath, newPath)] = files[f];
+                } else {
+                    newFiles[f] = files[f];
+                }
+            });
+            
+            folders = newFolders;
+            Object.keys(files).forEach(key => delete files[key]);
+            Object.assign(files, newFiles);
+            
+            // Update expanded folders
+            const newExpanded = new Set();
+            expandedFolders.forEach(f => {
+                if (f === oldPath) {
+                    newExpanded.add(newPath);
+                } else if (f.startsWith(oldPath + '/')) {
+                    newExpanded.add(f.replace(oldPath, newPath));
+                } else {
+                    newExpanded.add(f);
+                }
+            });
+            expandedFolders = newExpanded;
+            
+            // Update server file if it was in the renamed folder
+            if (serverFile && serverFile.startsWith(oldPath + '/')) {
+                serverFile = serverFile.replace(oldPath, newPath);
+            }
+        }
+        
+        renderFileTree();
+        renderTabs();
+        saveSession();
+    }
+
+    function deleteItem(path, type) {
+        if (!confirm(`Delete ${type === 'file' ? 'file' : 'folder'} "${path}"?`)) return;
+        
+        if (type === 'file') {
+            delete files[path];
+            
+            const index = openFiles.indexOf(path);
+            if (index > -1) {
+                openFiles.splice(index, 1);
+                if (activeFile === path) {
+                    activeFile = openFiles[0] || null;
+                    editor.value = activeFile ? files[activeFile] : '';
+                    updatePreview();
+                }
+            }
+            
+            // If deleting the server file, close server
+            if (serverRunning && serverFile === path) {
+                closeServerPreview();
+            }
+        } else {
+            // Delete folder and its contents
+            folders.delete(path);
+            
+            // Delete subfolders
+            folders.forEach(f => {
+                if (f.startsWith(path + '/')) {
+                    folders.delete(f);
+                }
+            });
+            
+            // Delete files in folder
+            Object.keys(files).forEach(f => {
+                if (f.startsWith(path + '/')) {
+                    delete files[f];
+                }
+            });
+            
+            // Remove from open files
+            openFiles = openFiles.filter(f => !f.startsWith(path + '/'));
+            
+            // Update active file if needed
+            if (activeFile && activeFile.startsWith(path + '/')) {
+                activeFile = openFiles[0] || null;
+                editor.value = activeFile ? files[activeFile] : '';
+                updatePreview();
+            }
+            
+            // Remove from expanded folders
+            expandedFolders.delete(path);
+            
+            // If deleting a folder that contains the current Django project
+            if (currentDjangoProject && currentDjangoProject.startsWith(path + '/')) {
+                currentDjangoProject = null;
+            }
+            
+            // If server file is in deleted folder, close server
+            if (serverFile && serverFile.startsWith(path + '/')) {
+                closeServerPreview();
+            }
+        }
+        
+        renderFileTree();
+        renderTabs();
+        saveSession();
+    }
+
+    function pasteItem(targetPath) {
+        if (!clipboard.path || clipboard.path === targetPath) return;
+        
+        const srcName = clipboard.path.split('/').pop();
+        let destPath = targetPath === '' ? srcName : `${targetPath}/${srcName}`;
+        
+        // Handle duplicates
+        let counter = 1;
+        let originalDest = destPath;
+        while (clipboard.type === 'file' ? files[destPath] : folders.has(destPath)) {
+            const ext = srcName.includes('.') ? srcName.substring(srcName.lastIndexOf('.')) : '';
+            const name = srcName.includes('.') ? srcName.substring(0, srcName.lastIndexOf('.')) : srcName;
+            destPath = targetPath === '' ? `${name}_${counter}${ext}` : `${targetPath}/${name}_${counter}${ext}`;
+            counter++;
+        }
+        
+        if (clipboard.type === 'file') {
+            files[destPath] = files[clipboard.path];
+            if (clipboard.op === 'cut') {
+                delete files[clipboard.path];
+                if (activeFile === clipboard.path) {
+                    activeFile = destPath;
+                    editor.value = files[destPath];
+                }
+                
+                const index = openFiles.indexOf(clipboard.path);
+                if (index > -1) {
+                    openFiles[index] = destPath;
+                }
+                
+                // Update server file if it was moved
+                if (serverFile === clipboard.path) {
+                    serverFile = destPath;
+                }
+            }
+        } else {
+            // Copy folder structure
+            if (clipboard.op === 'copy') {
+                folders.forEach(f => {
+                    if (f === clipboard.path || f.startsWith(clipboard.path + '/')) {
+                        const newPath = f.replace(clipboard.path, destPath);
+                        folders.add(newPath);
+                    }
+                });
+                
+                Object.keys(files).forEach(f => {
+                    if (f.startsWith(clipboard.path + '/')) {
+                        const newPath = f.replace(clipboard.path, destPath);
+                        files[newPath] = files[f];
+                    }
+                });
+            } else if (clipboard.op === 'cut') {
+                // Move folder
+                const newFolders = new Set();
+                const newFiles = {};
+                
+                folders.forEach(f => {
+                    if (f === clipboard.path) {
+                        newFolders.add(destPath);
+                    } else if (f.startsWith(clipboard.path + '/')) {
+                        newFolders.add(f.replace(clipboard.path, destPath));
+                    } else {
+                        newFolders.add(f);
+                    }
+                });
+                
+                Object.keys(files).forEach(f => {
+                    if (f === clipboard.path) {
+                        newFiles[destPath] = files[f];
+                    } else if (f.startsWith(clipboard.path + '/')) {
+                        newFiles[f.replace(clipboard.path, destPath)] = files[f];
+                    } else {
+                        newFiles[f] = files[f];
+                    }
+                });
+                
+                folders = newFolders;
+                Object.keys(files).forEach(key => delete files[key]);
+                Object.assign(files, newFiles);
+                
+                // Update expanded folders
+                const newExpanded = new Set();
+                expandedFolders.forEach(f => {
+                    if (f === clipboard.path) {
+                        newExpanded.add(destPath);
+                    } else if (f.startsWith(clipboard.path + '/')) {
+                        newExpanded.add(f.replace(clipboard.path, destPath));
+                    } else {
+                        newExpanded.add(f);
+                    }
+                });
+                expandedFolders = newExpanded;
+                
+                // Update server file if it was in moved folder
+                if (serverFile && serverFile.startsWith(clipboard.path + '/')) {
+                    serverFile = serverFile.replace(clipboard.path, destPath);
+                }
+            }
+        }
+        
+        if (clipboard.op === 'cut') {
+            clipboard = { op: null, path: null, type: null };
+        }
+        
+        renderFileTree();
+        renderTabs();
+        saveSession();
+    }
+
+    function createNewFile(parentPath) {
+        const fileName = prompt('Enter file name (e.g., newfile.py):');
+        if (!fileName) return;
+        
+        const filePath = parentPath === '' ? fileName : `${parentPath}/${fileName}`;
+        
+        if (files[filePath]) {
+            alert('File already exists!');
+            return;
+        }
+        
+        files[filePath] = '';
+        openFile(filePath);
+        renderFileTree();
+    }
+
+    function createNewFolder(parentPath) {
+        const folderName = prompt('Enter folder name:');
+        if (!folderName) return;
+        
+        const folderPath = parentPath === '' ? folderName : `${parentPath}/${folderName}`;
+        
+        if (folders.has(folderPath)) {
+            alert('Folder already exists!');
+            return;
+        }
+        
+        folders.add(folderPath);
+        expandedFolders.add(folderPath);
+        renderFileTree();
+    }
+
+    // --- Tabs & Editor ---
+    function renderTabs() {
+        tabsHeader.innerHTML = '';
+        
+        openFiles.forEach(filePath => {
+            const fileName = filePath.split('/').pop();
+            const isActive = filePath === activeFile;
+            
+            const tab = document.createElement('div');
+            tab.className = `tab ${isActive ? 'active' : ''}`;
+            tab.innerHTML = `
+                <span>${fileName}</span>
+                <span class="tab-close" onclick="closeTab('${filePath}', event)">×</span>
+            `;
+            
+            tab.onclick = (e) => {
+                if (!e.target.classList.contains('tab-close')) {
+                    switchTab(filePath);
+                }
+            };
+            
+            tabsHeader.appendChild(tab);
+        });
+        
+        breadcrumbFile.textContent = activeFile || '';
+        saveSession();
+    }
+
+    // --- FIXED: switchTab function ---
+    function switchTab(path) {
+        // Save current file content
+        if (activeFile && files[activeFile] !== undefined) {
+            files[activeFile] = editor.value;
+        }
+        
+        // Switch to new tab
+        activeFile = path;
+        editor.value = files[path] || '';
+        
+        renderTabs();
+        renderFileTree();
+        
+        // Only update preview if no server is running
+        if (!serverRunning) {
+            updatePreview();
+        } else {
+            // If server is running, update the close button
+            updateCloseButton();
+        }
+        saveSession();
+    }
+
+    // --- FIXED: closeTab function ---
+    function closeTab(path, e) {
+        if (e) e.stopPropagation();
+        
+        const index = openFiles.indexOf(path);
+        if (index > -1) {
+            openFiles.splice(index, 1);
+        }
+        
+        // Only close server if we're closing the file that's actually running the server
+        if (serverRunning && serverFile === path) {
+            closeServerPreview();
+        }
+        
+        if (activeFile === path) {
+            activeFile = openFiles.length > 0 ? openFiles[Math.max(0, index - 1)] : null;
+            editor.value = activeFile ? files[activeFile] : '';
+            
+            // Only update preview if no server is running
+            if (!serverRunning) {
+                updatePreview();
+            } else {
+                // If server is still running, update the URL to show it's still active
+                updateCloseButton();
+            }
+        }
+        
+        renderTabs();
+        saveSession();
+    }
+
+    function openFile(path) {
+        if (!openFiles.includes(path)) {
+            openFiles.push(path);
+        }
+        switchTab(path);
+    }
+
+    function saveCurrentState() {
+        if (activeFile && files[activeFile] !== undefined) {
+            files[activeFile] = editor.value;
+            saveSession();
+        }
+    }
+
+    function addNewFilePrompt() {
+        const fileName = prompt('Enter file name (e.g., script.py or folder/script.py):');
+        if (fileName) {
+            // Create parent folders if needed
+            const parts = fileName.split('/');
+            if (parts.length > 1) {
+                let currentPath = '';
+                for (let i = 0; i < parts.length - 1; i++) {
+                    currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+                    if (!folders.has(currentPath)) {
+                        folders.add(currentPath);
+                        expandedFolders.add(currentPath);
+                    }
+                }
+            }
+            
+            files[fileName] = '';
+            openFile(fileName);
+            renderFileTree();
+        }
+    }
+
+    function refreshFileTree() {
+        renderFileTree();
+    }
+
+    // --- Preview Functions ---
+    function updatePreview() {
+        const mountPoint = document.getElementById('preview-mount-point');
+        
+        if (!activeFile) {
+            mountPoint.innerHTML = '<div style="text-align:center;padding:20px;"><h1 style="color:#666;">WELCOME TO IDE</h1><p style="color:#888;">Open a file to start editing</p></div>';
+            return;
+        }
+        
+        // If server is running, don't change preview
+        if (serverRunning) {
+            return;
+        }
+        
+        if (activeFile.endsWith('.html')) {
+            loadHTMLPreview();
+        } else if (activeFile.endsWith('.py')) {
+            // Check if it's a Streamlit app
+            const content = files[activeFile] || editor.value;
+            if (content.includes('import streamlit') || content.includes('import stlite')) {
+                mountPoint.innerHTML = '<div style="text-align:center;padding:20px;"><p>Streamlit app detected</p><button onclick="runStlite(editor.value)" style="margin-top:10px;padding:8px 16px;background:#007fd4;color:white;border:none;border-radius:3px;cursor:pointer;">Run Streamlit App</button></div>';
+                serverFile = activeFile; // Track this file for server
+            } else if (activeFile === 'manage.py' || activeFile.includes('/manage.py')) {
+                mountPoint.innerHTML = '<div style="text-align:center;padding:20px;"><p>Django manage.py detected</p><button onclick="runDjangoServer()" style="margin-top:10px;padding:8px 16px;background:#007fd4;color:white;border:none;border-radius:3px;cursor:pointer;">Run Django Server</button></div>';
+                serverFile = activeFile; // Track this file for server
+            } else {
+                mountPoint.innerHTML = '<div style="text-align:center;padding:20px;"><p>Python file - Run in terminal</p><p style="font-size:12px;color:#888;">For Django: python manage.py runserver</p></div>';
+            }
+        } else {
+            mountPoint.innerHTML = '<div style="text-align:center;padding:20px;"><p>Preview not available for this file type</p></div>';
+        }
+    }
+
+    function loadHTMLPreview() {
+        const mountPoint = document.getElementById('preview-mount-point');
+        const content = files[activeFile] || editor.value;
+        
+        // If server is running, close it first
+        if (serverRunning) {
+            closeServerPreview();
+        }
+        
+        mountPoint.innerHTML = '';
+        
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        
+        const blob = new Blob([content], { type: 'text/html' });
+        iframe.src = URL.createObjectURL(blob);
+        
+        mountPoint.appendChild(iframe);
+        browserUrl.textContent = `http://localhost:8000/${activeFile}`;
+    }
+
+    function loadPreview() {
+        if (activeFile && activeFile.endsWith('.html')) {
+            loadHTMLPreview();
+        } else {
+            updatePreview();
+        }
+    }
+
+    function browserBack() {
+        // Placeholder for browser back functionality
+        console.log('Browser back');
+    }
+
+    function browserForward() {
+        // Placeholder for browser forward functionality
+        console.log('Browser forward');
+    }
+
+    // --- Panel Management ---
+    function switchPanel(panel) {
+        currentPanel = panel;
+        
+        // Update tab states
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        event.target.classList.add('active');
+        
+        // Show/hide containers
+        terminalContainer.style.display = panel === 'terminal' ? 'block' : 'none';
+        outputContainer.style.display = panel === 'output' ? 'block' : 'none';
+        problemsContainer.style.display = panel === 'problems' ? 'block' : 'none';
+        
+        if (panel === 'terminal' && term) {
+            setTimeout(() => fitAddon.fit(), 10);
+        }
+    }
+
+    // --- Sidebar Functions ---
+    function toggleSidebar() {
+        sidebar.classList.toggle('collapsed');
+        if (fitAddon) {
+            setTimeout(() => fitAddon.fit(), 100);
+        }
+    }
+
+    function toggleSection(header) {
+        header.classList.toggle('collapsed');
+        const content = header.nextElementSibling;
+        if (content) {
+            content.style.display = header.classList.contains('collapsed') ? 'none' : 'block';
+        }
+    }
+
+    // --- Resizers ---
+        // --- Resizers ---
+    function setupResizers() {
+        const rSidebar = document.getElementById('resizer-sidebar');
+        const rTerm = document.getElementById('resizer-terminal');
+        const rPreview = document.getElementById('resizer-preview');
+        const termPanel = document.getElementById('bottom-panel');
+        const codeCol = document.getElementById('code-column');
+        const previewCol = document.getElementById('preview-column');
+
+        // Fix for sidebar resizer - no more sticking
+        rSidebar.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            
+            const startX = e.clientX;
+            const startWidth = parseInt(window.getComputedStyle(sidebar).width, 10);
+            
+            function onMouseMove(e) {
+                const dx = e.clientX - startX;
+                let newWidth = startWidth + dx;
+                
+                // Limit width between 150px and 400px
+                newWidth = Math.max(150, Math.min(400, newWidth));
+                
+                sidebar.style.width = newWidth + 'px';
+                
+                // Update UI immediately
+                if (fitAddon) {
+                    setTimeout(() => fitAddon.fit(), 10);
+                }
+            }
+            
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.body.style.cursor = 'default';
+                rSidebar.style.cursor = 'col-resize';
+                
+                // Remove any leftover event listeners
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+            
+            document.body.style.cursor = 'col-resize';
+            rSidebar.style.cursor = 'col-resize';
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp, { once: true });
+        });
+        
+        // Terminal resizer (horizontal) - keep original
+        rTerm.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            
+            const startY = e.clientY;
+            const startHeight = parseInt(window.getComputedStyle(termPanel).height, 10);
+            const codeColRect = codeCol.getBoundingClientRect();
+            
+            function onMouseMove(e) {
+                const dy = e.clientY - startY;
+                let newHeight = startHeight - dy;
+                
+                // Limit height between 100px and 80% of code column
+                const maxHeight = codeCol.offsetHeight - 100;
+                newHeight = Math.max(100, Math.min(maxHeight, newHeight));
+                
+                termPanel.style.height = newHeight + 'px';
+                
+                if (fitAddon) {
+                    setTimeout(() => fitAddon.fit(), 10);
+                }
+            }
+            
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.body.style.cursor = 'default';
+                rTerm.style.cursor = 'row-resize';
+                
+                // Remove any leftover event listeners
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+            
+            document.body.style.cursor = 'row-resize';
+            rTerm.style.cursor = 'row-resize';
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp, { once: true });
+        });
+        
+        // Preview resizer (vertical) - fixed version
+        rPreview.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            
+            const startX = e.clientX;
+            const startWidth = parseInt(window.getComputedStyle(previewCol).width, 10);
+            
+            function onMouseMove(e) {
+                const dx = startX - e.clientX; // Negative because we're resizing from right to left
+                let newWidth = startWidth + dx;
+                
+                // Limit width between 200px and 80% of window
+                const maxWidth = window.innerWidth - 300;
+                newWidth = Math.max(200, Math.min(maxWidth, newWidth));
+                
+                previewCol.style.width = newWidth + 'px';
+            }
+            
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.body.style.cursor = 'default';
+                rPreview.style.cursor = 'col-resize';
+                
+                // Remove any leftover event listeners
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+            
+            document.body.style.cursor = 'col-resize';
+            rPreview.style.cursor = 'col-resize';
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp, { once: true });
+        });
+        
+        // Prevent text selection during resize
+        document.addEventListener('selectstart', function(e) {
+            if (e.target.classList.contains('resizer-v') || 
+                e.target.classList.contains('resizer-h')) {
+                e.preventDefault();
+            }
+        });
+        
+        // Ensure cursor resets if mouse leaves window during resize
+        document.addEventListener('mouseleave', function(e) {
+            if (document.body.style.cursor === 'col-resize' || 
+                document.body.style.cursor === 'row-resize') {
+                document.body.style.cursor = 'default';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

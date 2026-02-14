@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Teams</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ALL YOUR EXISTING CSS STYLES - KEEP THEM EXACTLY AS YOU HAVE THEM */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', SegoeUI, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: #f8f8f8;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #323130;
+            overflow: hidden;
+        }
+
+        /* Microsoft Teams Header */
+        .teams-header {
+            background: #464775;
+            color: white;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid #404080;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .teams-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .teams-logo i {
+            font-size: 20px;
+        }
+
+        .app-bar {
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            padding: 2px;
+        }
+
+        .app-button {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .app-button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .app-button.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-box {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 4px;
+            padding: 6px 30px 6px 30px;
+            color: white;
+            width: 240px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .header-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-profile:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6264a7, #464775);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Main Container */
+        .teams-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Teams Sidebar - Left */
+        .teams-sidebar {
+            width: 60px;
+            background: #464775;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            gap: 8px;
+        }
+
+        .teams-button {
+            width: 44px;
+            height: 44px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .teams-button.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .teams-button:hover:not(.active) {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .teams-button .notification {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #d13438;
+            color: white;
+            border-radius: 8px;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* App Sidebar */
+        .app-sidebar {
+            width: 320px;
+            background: white;
+            border-right: 1px solid #e1dfdd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e1dfdd;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e1dfdd;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: #6264a7;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #605e5c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-item {
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #323130;
+            transition: background-color 0.2s;
+        }
+
+        .section-item.active {
+            background: #f3f2f1;
+            border-left: 3px solid #6264a7;
+        }
+
+        .section-item:hover:not(.active) {
+            background: #f8f8f8;
+        }
+
+        .section-item .badge {
+            background: #6264a7;
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        /* Main Content Area */
+        .main-content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+
+        /* Chat Container - Single Chat View */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e1dfdd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f8f8;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #6264a7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chat-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #323130;
+        }
+
+        .chat-status {
+            font-size: 14px;
+            color: #605e5c;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6bb700;
+        }
+
+        .status-dot.online { background: #6bb700; }
+        .status-dot.away { background: #ffaa44; }
+        .status-dot.busy { background: #d13438; }
+        .status-dot.offline { background: #a19f9d; }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-action-btn {
+            background: none;
+            border: none;
+            color: #605e5c;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .chat-action-btn:hover {
+            background: #e1dfdd;
+        }
+
+        .chat-messages-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #f8f8f8;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.incoming {
+            align-self: flex-start;
+        }
+
+        .message.outgoing {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #6264a7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            max-width: 100%;
+        }
+
+        .message.outgoing .message-content {
+            background: #6264a7;
+            color: white;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #605e5c;
+        }
+
+        .message.outgoing .message-time {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            padding: 8px 24px;
+            font-size: 13px;
+            color: #605e5c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: #f8f8f8;
+        }
+
+        .typing-indicator.active {
+            opacity: 1;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #605e5c;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            padding: 20px 24px;
+            border-top: 1px solid #e1dfdd;
+            background: white;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: white;
+            border: 1px solid #e1dfdd;
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: #6264a7;
+        }
+
+        .chat-input-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-action-icon {
+            background: none;
+            border: none;
+            color: #605e5c;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .chat-action-icon:hover {
+            background: #f3f2f1;
+        }
+
+        .chat-input-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-input {
+            min-height: 24px;
+            max-height: 120px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            line-height: 1.5;
+            background: transparent;
+            width: 100%;
+        }
+
+        .chat-input::placeholder {
+            color: #a19f9d;
+        }
+
+        .chat-input-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .input-actions-left {
+            display: flex;
+            gap: 4px;
+        }
+
+        .send-btn {
+            background: #6264a7;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #464775;
+        }
+
+        .send-btn:disabled {
+            background: #e1dfdd;
+            cursor: not-allowed;
+        }
+
+        /* No Chat Selected State */
+        .no-chat-selected {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: #f8f8f8;
+            text-align: center;
+        }
+
+        .no-chat-icon {
+            font-size: 64px;
+            color: #d2d0ce;
+            margin-bottom: 24px;
+        }
+
+        .no-chat-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 12px;
+        }
+
+        .no-chat-subtitle {
+            font-size: 16px;
+            color: #605e5c;
+            max-width: 400px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .start-chat-btn {
+            background: #6264a7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .start-chat-btn:hover {
+            background: #464775;
+        }
+
+        /* Tab Content (for other tabs) */
+        .tab-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 16px 24px;
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+        }
+
+        .content-subtitle {
+            font-size: 14px;
+            color: #605e5c;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .app-sidebar {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-sidebar {
+                width: 240px;
+            }
+            
+            .teams-sidebar {
+                width: 50px;
+            }
+            
+            .teams-button {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .teams-container {
+                flex-direction: column;
+            }
+            
+            .teams-sidebar {
+                width: 100%;
+                height: 60px;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 8px;
+            }
+            
+            .app-sidebar {
+                width: 100%;
+                display: none;
+            }
+            
+            .app-sidebar.active {
+                display: flex;
+            }
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #d13438;
+            color: white;
+            padding: 12px 24px;
+            margin: 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="teams-header">
+        <div class="header-left">
+            <div class="teams-logo">
+                <i class="fab fa-microsoft"></i>
+                <span>Teams</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-box" placeholder="Search (Ctrl+Alt+E)">
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-actions">
+                <button class="header-btn">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="header-btn">
+                    <i class="fas fa-help"></i>
+                </button>
+                <button class="header-btn">
+                    <i class="fas fa-apps"></i>
+                </button>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">RD</div>
+                <span>Rakshit D</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="teams-container">
+        <!-- Teams Sidebar -->
+        <div class="teams-sidebar">
+            <button class="teams-button" data-tab="activity" title="Activity">
+                <i class="fas fa-bell"></i>
+                <div class="notification">3</div>
+            </button>
+            <button class="teams-button active" data-tab="chat" title="Chat">
+                <i class="fas fa-comment-alt"></i>
+                <div class="notification" id="chatNotification">2</div>
+            </button>
+            <button class="teams-button" data-tab="teams" title="Teams">
+                <i class="fas fa-people-group"></i>
+            </button>
+            <button class="teams-button" data-tab="calendar" title="Calendar">
+                <i class="fas fa-calendar"></i>
+            </button>
+            <button class="teams-button" data-tab="assignments" title="Assignments">
+                <i class="fas fa-tasks"></i>
+                <div class="notification">2</div>
+            </button>
+        </div>
+
+        <!-- App Sidebar -->
+        <div class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title" id="sidebarTitle">Chat</div>
+                <input type="text" class="search-input" placeholder="Search" id="chatSearch">
+            </div>
+            
+            <div class="sidebar-content" id="sidebarContent">
+                <!-- Chat list will be dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Main Content Area - Single Chat View -->
+        <div class="main-content-area">
+            <!-- Error Container -->
+            <div id="errorContainer" style="display: none;"></div>
+            
+            <!-- Chat Tab - Single Chat View -->
+            <div class="tab-content" id="chatContent">
+                <!-- No Chat Selected State (Visible by default) -->
+                <div class="no-chat-selected" id="noChatSelected">
+                    <div class="no-chat-icon">
+                        <i class="fas fa-comment-alt"></i>
+                    </div>
+                    <div class="no-chat-title">Your messages</div>
+                    <div class="no-chat-subtitle">
+                        Select a conversation or start a new chat to begin messaging. 
+                        You can send messages, share files, and make calls.
+                    </div>
+                    <button class="start-chat-btn" onclick="startNewChat()">
+                        <i class="fas fa-plus"></i>
+                        Start a new chat
+                    </button>
+                </div>
+
+                <!-- Active Chat View (Hidden by default) -->
+                <div class="chat-container" id="activeChat" style="display: none;">
+                    <div class="chat-header">
+                        <div class="chat-header-info">
+                            <div class="chat-avatar" id="activeChatAvatar">SC</div>
+                            <div>
+                                <div class="chat-title" id="activeChatName">Sarah Chen</div>
+                                <div class="chat-status" id="activeChatStatus">
+                                    <span class="status-dot online"></span>
+                                    <span>Online</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="chat-action-btn" title="Video call">
+                                <i class="fas fa-video"></i>
+                            </button>
+                            <button class="chat-action-btn" title="Audio call">
+                                <i class="fas fa-phone"></i>
+                            </button>
+                            <button class="chat-action-btn" title="More options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages will be dynamically added here -->
+                        </div>
+                        
+                        <div class="typing-indicator" id="typingIndicator">
+                            <span id="typingPerson">Sarah Chen</span> is typing
+                            <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <div class="chat-input-actions">
+                                <button class="chat-action-icon" title="Attach file">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button class="chat-action-icon" title="Emoji">
+                                    <i class="far fa-smile"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="chat-input-area">
+                                <textarea 
+                                    class="chat-input" 
+                                    id="messageInput"
+                                    placeholder="Type a new message"
+                                    rows="1"
+                                    oninput="handleMessageInput()"
+                                    onkeydown="handleKeyDown(event)"></textarea>
+                                <input type="hidden" id="chatIdInput" value="sarah">
+                                
+                                <div class="chat-input-options">
+                                    <div class="input-actions-left">
+                                        <button class="chat-action-icon" title="Format">
+                                            <i class="fas fa-font"></i>
+                                        </button>
+                                        <button class="chat-action-icon" title="GIF">
+                                            <i class="fas fa-photo-video"></i>
+                                        </button>
+                                    </div>
+                                    <button class="send-btn" id="sendButton" onclick="sendMessage()" disabled>
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Tab -->
+            <div class="tab-content" id="activityContent" style="display: none;">
+                <div class="content-header">
+                    <div class="content-title">Activity</div>
+                    <div class="content-subtitle">Your recent notifications</div>
+                </div>
+                <div class="no-chat-selected">
+                    <div class="no-chat-icon">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <div class="no-chat-title">No recent activity</div>
+                    <div class="no-chat-subtitle">
+                        You'll see notifications here when someone mentions you, reacts to your messages, 
+                        or when there are other updates.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teams Tab -->
+            <div class="tab-content" id="teamsContent" style="display: none;">
+                <div class="content-header">
+                    <div class="content-title">Teams</div>
+                    <div class="content-subtitle">Your teams and channels</div>
+                </div>
+                <div class="no-chat-selected">
+                    <div class="no-chat-icon">
+                        <i class="fas fa-people-group"></i>
+                    </div>
+                    <div class="no-chat-title">No teams yet</div>
+                    <div class="no-chat-subtitle">
+                        Join or create a team to collaborate with others. 
+                        Teams bring together people, conversations, and content.
+                    </div>
+                    <button class="start-chat-btn">
+                        <i class="fas fa-plus"></i>
+                        Create a team
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Tab -->
+            <div class="tab-content" id="calendarContent" style="display: none;">
+                <div class="content-header">
+                    <div class="content-title">Calendar</div>
+                    <div class="content-subtitle">Your meetings and events</div>
+                </div>
+                <div class="no-chat-selected">
+                    <div class="no-chat-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="no-chat-title">No upcoming events</div>
+                    <div class="no-chat-subtitle">
+                        Schedule a meeting or check your calendar to see your upcoming events.
+                    </div>
+                    <button class="start-chat-btn">
+                        <i class="fas fa-plus"></i>
+                        Schedule a meeting
+                    </button>
+                </div>
+            </div>
+
+            <!-- Assignments Tab -->
+            <div class="tab-content" id="assignmentsContent" style="display: none;">
+                <div class="content-header">
+                    <div class="content-title">Assignments</div>
+                    <div class="content-subtitle">Your tasks and assignments</div>
+                </div>
+                <div class="no-chat-selected">
+                    <div class="no-chat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="no-chat-title">No assignments</div>
+                    <div class="no-chat-subtitle">
+                        You don't have any pending assignments. Check back later or create new tasks.
+                    </div>
+                    <button class="start-chat-btn">
+                        <i class="fas fa-plus"></i>
+                        Create assignment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =======================
+           APPLICATION STATE
+        ======================= */
+        const appState = {
+            currentTab: 'chat',
+            activeChat: null,
+            users: [
+                { id: 'sarah', name: 'Sarah Chen', avatar: 'SC', status: 'online', lastSeen: 'Just now' },
+                { id: 'alex', name: 'Alex Johnson', avatar: 'AJ', status: 'online', lastSeen: '2 min ago' }
+            ],
+            chatHistory: new Map(),
+            unreadCounts: new Map(),
+            isProcessingMessage: false
+        };
+
+        let savedUserMessages = [];
+
+        const sampleMessages = {
+            'sarah': [
+                { id: 1, sender: 'sarah', text: 'Hi Rakshit!', time: '10:30 AM', incoming: true }
+            ],
+            'alex': [
+                { id: 1, sender: 'alex', text: 'Hey, ready for the meeting?', time: '9:15 AM', incoming: true }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize chat history
+            Object.keys(sampleMessages).forEach(chatId => {
+                if (!appState.chatHistory.has(chatId)) {
+                    appState.chatHistory.set(chatId, [...sampleMessages[chatId]]);
+                }
+            });
+            
+            renderChatSidebar();
+            setupTabSwitching();
+        });
+
+        /* =======================
+           TAB SWITCHING
+        ======================= */
+        function setupTabSwitching() {
+            document.querySelectorAll('.teams-button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tab = this.dataset.tab;
+                    
+                    // Update active state
+                    document.querySelectorAll('.teams-button').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show correct content
+                    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+                    document.getElementById(`${tab}Content`).style.display = 'block';
+                    
+                    // Update sidebar title
+                    document.getElementById('sidebarTitle').textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
+                    
+                    // For chat tab, show appropriate sidebar content
+                    if (tab === 'chat') {
+                        document.querySelector('.app-sidebar').style.display = 'flex';
+                        renderChatSidebar();
+                    }
+                });
+            });
+        }
+
+        /* =======================
+           CHAT FUNCTIONS
+        ======================= */
+        function openChat(userId) {
+            appState.activeChat = userId;
+            
+            // Update the hidden chat_id input
+            const chatIdInput = document.getElementById('chatIdInput');
+            if (chatIdInput) chatIdInput.value = userId;
+
+            document.getElementById('noChatSelected').style.display = 'none';
+            document.getElementById('activeChat').style.display = 'flex';
+
+            const user = appState.users.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('activeChatName').textContent = user.name;
+            document.getElementById('activeChatAvatar').textContent = user.avatar;
+
+            // Set status
+            const statusDot = document.querySelector('#activeChatStatus .status-dot');
+            const statusText = document.querySelector('#activeChatStatus span:last-child');
+            statusDot.className = `status-dot ${user.status}`;
+            statusText.textContent = user.status.charAt(0).toUpperCase() + user.status.slice(1);
+
+            loadMessages(userId);
+            renderChatSidebar();
+        }
+
+        function loadMessages(userId) {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = '';
+
+            const messages = appState.chatHistory.get(userId) || [];
+            messages.forEach(msg => {
+                container.innerHTML += createMessageHTML(msg);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function createMessageHTML(msg) {
+            const sender = msg.incoming ? (msg.sender === 'sarah' ? 'Sarah' : msg.senderName || 'Sarah') : 'You';
+            const avatar = msg.incoming ? (msg.sender === 'sarah' ? 'SC' : msg.avatar || 'SC') : 'RD';
+            
+            return `
+                <div class="message ${msg.incoming ? 'incoming' : 'outgoing'}">
+                    <div class="message-avatar">${avatar}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">${sender}</span>
+                            <span class="message-time">${msg.time}</span>
+                        </div>
+                        <div class="message-text">${escapeHtml(msg.text)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /* =======================
+           SEND MESSAGE WITH AJAX - NO RELOAD
+        ======================= */
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text || !appState.activeChat || appState.isProcessingMessage) return;
+            
+            appState.isProcessingMessage = true;
+
+            // Save message to local array
+            savedUserMessages.push({
+                chatId: appState.activeChat,
+                message: text,
+                timestamp: new Date().toISOString()
+            });
+
+            // Create user message object
+            const userMessage = {
+                id: Date.now(),
+                sender: 'me',
+                text: text,
+                time: getCurrentTime(),
+                incoming: false
+            };
+
+            // Add to chat history
+            const messages = appState.chatHistory.get(appState.activeChat) || [];
+            messages.push(userMessage);
+            appState.chatHistory.set(appState.activeChat, messages);
+
+            // Display user message
+            document.getElementById('chatMessages').innerHTML += createMessageHTML(userMessage);
+            input.value = '';
+            input.style.height = '24px';
+            document.getElementById('sendButton').disabled = true;
+            
+            // Scroll to bottom
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+
+            // Show typing indicator
+            showTypingIndicator(true);
+
+            // Send to Django backend via AJAX - NO RELOAD
+            sendMessageAJAX(text);
+        }
+
+        function sendMessageAJAX(message) {
+            // Get CSRF token
+            const csrftoken = getCookie('csrftoken');
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('mbox', message);
+            formData.append('chat_id', appState.activeChat);
+
+            // Send AJAX request
+            fetch('/save_message/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide typing indicator
+                showTypingIndicator(false);
+                
+                // Display LLM response as Sarah's message
+                if (data.response) {
+                    addLLMResponse(data.response);
+                }
+                
+                // Reset processing flag
+                appState.isProcessingMessage = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showTypingIndicator(false);
+                appState.isProcessingMessage = false;
+                showErrorMessage('Failed to get response. Please try again.');
+            });
+        }
+
+        // Function to display LLM response as Sarah's message
+        function addLLMResponse(responseText) {
+            if (!appState.activeChat) return;
+            
+            // Create Sarah's response message
+            const responseMessage = {
+                id: Date.now(),
+                sender: 'sarah',
+                text: responseText,
+                time: getCurrentTime(),
+                incoming: true,
+                senderName: 'Sarah Chen',
+                avatar: 'SC'
+            };
+            
+            // Add to chat history
+            const messages = appState.chatHistory.get(appState.activeChat) || [];
+            messages.push(responseMessage);
+            appState.chatHistory.set(appState.activeChat, messages);
+            
+            // Display the response
+            document.getElementById('chatMessages').innerHTML += createMessageHTML(responseMessage);
+            
+            // Scroll to bottom
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Helper function to get CSRF cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function showTypingIndicator(show) {
+            const indicator = document.getElementById('typingIndicator');
+            const typingPerson = document.getElementById('typingPerson');
+            
+            if (show && appState.activeChat) {
+                const user = appState.users.find(u => u.id === appState.activeChat);
+                typingPerson.textContent = user ? user.name : 'Sarah Chen';
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        function showErrorMessage(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.style.display = 'block';
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.style.display='none'" style="margin-left: auto; background: none; border: none; color: white; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                errorContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        function handleMessageInput() {
+            const input = document.getElementById('messageInput');
+            document.getElementById('sendButton').disabled = !input.value.trim() || appState.isProcessingMessage;
+            
+            // Auto-resize textarea
+            input.style.height = 'auto';
+            input.style.height = (input.scrollHeight) + 'px';
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function renderChatSidebar() {
+            const sidebar = document.getElementById('sidebarContent');
+            if (!sidebar) return;
+            
+            sidebar.innerHTML = '';
+
+            appState.users.forEach(user => {
+                const isActive = appState.activeChat === user.id;
+                const unreadCount = appState.unreadCounts.get(user.id) || 0;
+                
+                // Get last message for preview
+                const messages = appState.chatHistory.get(user.id) || [];
+                const lastMessage = messages.length > 0 ? messages[messages.length - 1].text : '';
+                const lastMessagePreview = lastMessage.length > 30 ? lastMessage.substring(0, 30) + '...' : lastMessage;
+                
+                sidebar.innerHTML += `
+                    <div class="section-item ${isActive ? 'active' : ''}"
+                         onclick="openChat('${user.id}')">
+                        <div class="chat-avatar" style="background: #6264a7; color: white; width: 32px; height: 32px; font-size: 12px;">${user.avatar}</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 600;">${user.name}</span>
+                                <span style="font-size: 11px; color: #605e5c;">${messages.length > 0 ? messages[messages.length - 1].time : ''}</span>
+                            </div>
+                            <div style="font-size: 12px; color: #605e5c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${lastMessagePreview || user.status}
+                            </div>
+                        </div>
+                        ${unreadCount ? `<span class="badge">${unreadCount}</span>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function startNewChat() {
+            openChat('sarah');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkArena | Simulation Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #f1f5f9;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 50px;
+}
+
+.separator {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #22d3ee);
+  margin: 20px auto 60px;
+  border-radius: 3px;
+}
+
+/* Cards */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  transition: 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+}
+
+.card i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #22d3ee;
+}
+
+.card h2 {
+  margin-bottom: 20px;
+}
+
+/* Skill Bars */
+
+.skill {
+  margin-bottom: 20px;
+}
+
+.skill-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.progress {
+  width: 100%;
+  background: #334155;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 12px;
+}
+
+.progress-bar {
+  height: 12px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #6366f1, #22d3ee);
+  width: 0;
+  animation: growBar 1.5s ease forwards;
+}
+
+@keyframes growBar {
+  from { width: 0; }
+}
+
+/* Role Badges */
+
+.role-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #6366f1, #22d3ee);
+  padding: 8px 16px;
+  border-radius: 12px;
+  margin: 5px 5px 10px 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 80px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>WorkArena Simulation Report</h1>
+  <p class="subtitle">AI-Driven Skill Evaluation & Career Insights</p>
+  <div class="separator"></div>
+
+  <div class="cards">
+
+    <!-- Skill Evaluation -->
+    <div class="card">
+      <i class="fa-solid fa-brain"></i>
+      <h2>Skill Assessment</h2>
+
+      <div class="skill">
+        <div class="skill-title">
+          <span>Problem Solving</span>
+          <span>82%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width:82%"></div>
+        </div>
+      </div>
+
+      <div class="skill">
+        <div class="skill-title">
+          <span>Domain Knowledge</span>
+          <span>76%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width:76%"></div>
+        </div>
+      </div>
+
+      <div class="skill">
+        <div class="skill-title">
+          <span>Communication Skills</span>
+          <span>88%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width:88%"></div>
+        </div>
+      </div>
+
+      <div class="skill">
+        <div class="skill-title">
+          <span>Leadership & Execution</span>
+          <span>80%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width:80%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Feedback -->
+    <div class="card">
+      <i class="fa-solid fa-robot"></i>
+      <h2>AI Feedback</h2>
+      <p>
+        You demonstrate strong structured thinking and clear communication. 
+        Decision-making under simulated constraints was efficient and practical.
+      </p>
+      <p>
+        To reach elite-level performance, focus on deeper domain exploration 
+        and handling ambiguous problem statements with advanced frameworks.
+      </p>
+    </div>
+
+    <!-- Suggested Career Roles -->
+    <div class="card">
+      <i class="fa-solid fa-briefcase"></i>
+      <h2>Recommended Career Paths</h2>
+      <span class="role-badge">AI Product Manager</span>
+      <span class="role-badge">Data Analyst</span>
+      <span class="role-badge">Business Strategist</span>
+      <span class="role-badge">Technical Consultant</span>
+      <p>
+        These roles align with your demonstrated analytical ability, communication strength, and leadership potential.
+      </p>
+    </div>
+
+  </div>
+  <br>
+<a href="/home/" style="color: #f1f5f9;"><center>Get Personalized Career Path</center></a>
+  <div class="footer">
+    WorkArena © 2026 | AI-Powered Job Simulation Platform
+  </div>
+</div>
+
+</body>
+</html>
