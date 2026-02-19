@@ -1,0 +1,44 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>WorkArena | Free Job Simulations</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Django static files -->
+    {% load static %}
+    
+    <!-- Link to your external CSS file -->
+    <link rel="stylesheet" href="{% static 'hh/static/css/style.css' %}">
+</head>
+<body>
+<div class="overlay show" id="levelModal">
+    <!-- The modal/dialog box itself -->
+    <div class="modal">
+        <h2 id="projTitle">Frontend Developer</h2>
+        <p>Choose your experience level to get a customized learning path</p>
+
+        <!-- Level selection buttons -->
+        <div class="level-options">
+            <button class="level-btn">🌱 Beginner</button>
+            <button class="level-btn">🚀 Advanced</button>
+        </div>
+
+        <!-- Language selection dropdown -->
+        <div class="lang-select" id="langBox">
+            <label>Your Preference</label>
+            <select id="lang">
+                <option value="html">HTML/CSS/JS</option>
+                <option value="react">React Native</option>
+                <option value="flutter">Flutter</option>
+            </select>
+        </div>
+
+        <!-- Action buttons -->
+        <button class="btn-primary" id="startBtn">Start Simulation →</button>
+        <button class="btn-secondary" onclick="closeModals()">Cancel</button>
+    </div>
+</body>
+</div>

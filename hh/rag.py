@@ -16,7 +16,7 @@ def call_groq(prompt):
     }
     payload = {
         "model": MODEL_NAME,
-        "messages": [{"role": "user", "content": prompt}]
+        "messages": [{"role": "system", "content": "you are Sarah and need to handle user query regardding software development and programming. You have access to the following context: " + STATE['extracted_text']}, {"role": "user", "content": prompt}],
     }
     
     response = requests.post(url, headers=headers, json=payload, timeout=30)

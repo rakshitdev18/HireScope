@@ -1067,9 +1067,6 @@
     </div>
 
     <script>
-        /* =======================
-           APPLICATION STATE
-        ======================= */
         const appState = {
             currentTab: 'chat',
             activeChat: null,
@@ -1105,9 +1102,6 @@
             setupTabSwitching();
         });
 
-        /* =======================
-           TAB SWITCHING
-        ======================= */
         function setupTabSwitching() {
             document.querySelectorAll('.teams-button').forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -1274,15 +1268,12 @@
                 return response.json();
             })
             .then(data => {
-                // Hide typing indicator
                 showTypingIndicator(false);
                 
-                // Display LLM response as Sarah's message
                 if (data.response) {
                     addLLMResponse(data.response);
                 }
                 
-                // Reset processing flag
                 appState.isProcessingMessage = false;
             })
             .catch(error => {

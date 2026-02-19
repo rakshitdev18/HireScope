@@ -1,4 +1,4 @@
-from hh.views import home, mail, works, register, teams, ide, login,save_message,chat_page,sim,begin,roles,result
+from hh.views import *
 from django.urls import path
 
 
@@ -16,4 +16,5 @@ urlpatterns = [
     path('chat/', chat_page, name='chat_page'),
     path('roles/', roles, name='roles'),
     path('result/', result, name='result'),
+    path('trial/', trial, name='trial'),
 ]
