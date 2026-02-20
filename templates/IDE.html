@@ -1,503 +1,501 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Django Cloud IDE</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
-    <style>
-        :root {
-            --bg-dark: #1e1e1e;
-            --bg-darker: #181818;
-            --bg-panel: #252526;
-            --bg-active: #1e1e1e;
-            --bg-inactive-tab: #2d2d2d;
-            --text-main: #cccccc;
-            --text-sub: #888888;
-            --accent: #007fd4;
-            --border: #3c3c3c;
-            --terminal-bg: #1e1e1e;
-            --resizer-hover: #007fd4;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django Cloud IDE</title>
+<script src="https://cdn.tailwindcss.com"></script>
+{% load static %}
+<link rel="stylesheet" href="{% static 'hh/static/css/style.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+<style>
+    :root {
+        --bg-dark: #1e1e1e;
+        --bg-darker: #181818;
+        --bg-panel: #252526;
+        --bg-active: #1e1e1e;
+        --bg-inactive-tab: #2d2d2d;
+        --text-main: #cccccc;
+        --text-sub: #888888;
+        --accent: #007fd4;
+        --border: #3c3c3c;
+        --terminal-bg: #1e1e1e;
+        --resizer-hover: #007fd4;
+    }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-            font-size: 13px;
-            user-select: none;
-        }
+    * { 
+        box-sizing: border-box; 
+        margin: 0; 
+        padding: 0; 
+    }
 
-        /* --- Activity Bar --- */
-        .activity-bar {
-            width: 48px;
-            background-color: #333333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 10px;
-            border-right: 1px solid var(--border);
-            z-index: 20;
-            flex-shrink: 0;
-        }
-
-        .activity-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            color: #858585;
-            position: relative;
-        }
-        .activity-icon:hover { color: #fff; }
-        .activity-icon.active { color: #fff; border-left: 2px solid #fff; }
-        .activity-icon svg { width: 24px; height: 24px; }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 250px;
-            min-width: 0;
-            background-color: var(--bg-panel);
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border);
-            transition: width 0.1s ease-out;
-            overflow: hidden;
-        }
-        .sidebar.collapsed { 
-            width: 0 !important; 
-            min-width: 0 !important;
-            border: none; 
-        }
-        
-        .sidebar-title {
-            padding: 10px 20px;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-sub);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 35px;
-            min-height: 35px;
-        }
-
-        .sidebar-section {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        .section-header {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 11px;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            color: #bbb;
-            border-bottom: 1px solid var(--border);
-            height: 30px;
-            min-height: 30px;
-        }
-        .section-header:hover { color: #fff; background-color: #2a2d2e; }
-        .section-header svg { 
-            width: 14px; 
-            height: 14px; 
-            margin-right: 5px; 
-            transition: transform 0.2s; 
-            flex-shrink: 0;
-        }
-        .section-header.collapsed svg { transform: rotate(-90deg); }
-
-        .file-tree { 
-            overflow-y: auto; 
-            flex: 1; 
-            padding: 5px 0;
-        }
-        
-        .file-item {
-            padding: 4px 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            height: 24px;
-        }
-        .file-item:hover { background-color: #2a2d2e; }
-        .file-item.active { background-color: #37373d; color: #fff; }
-        .file-indent { margin-left: 10px; }
-        .file-item .folder-arrow {
-            width: 14px;
-            display: inline-block;
-            text-align: center;
-            margin-right: 4px;
-            color: #dcb67a;
-            font-size: 10px;
-        }
-
-        /* --- Main Content Area --- */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-            min-width: 300px;
-        }
-
-        /* --- Code Column --- */
-        .code-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 200px;
-            position: relative;
-        }
-
-        /* Tabs */
-        .tabs-header {
-            display: flex;
-            background-color: var(--bg-panel);
-            overflow-x: auto;
-            flex-shrink: 0;
-            height: 35px;
-            min-height: 35px;
-            border-bottom: 1px solid var(--border);
-        }
-        .tabs-header::-webkit-scrollbar { 
-            height: 2px; 
-            background: transparent;
-        }
-        .tabs-header::-webkit-scrollbar-thumb {
-            background: var(--accent);
-        }
-        
-        .tab {
-            padding: 0 15px;
-            height: 100%;
-            background-color: var(--bg-inactive-tab);
-            color: #969696;
-            cursor: pointer;
-            border-right: 1px solid #252526;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 120px;
-            max-width: 200px;
-            font-size: 13px;
-            position: relative;
-        }
-        .tab.active { 
-            background-color: var(--bg-dark); 
-            color: #fff; 
-            border-bottom: 1px solid var(--bg-dark);
-        }
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: var(--bg-dark);
-        }
-        .tab-close { 
-            font-size: 16px; 
-            border-radius: 3px; 
-            padding: 0 4px;
-            margin-left: auto;
-        }
-        .tab-close:hover { background-color: #444; color: #fff; }
-
-        /* Breadcrumbs */
-        .breadcrumbs {
-            height: 30px;
-            background-color: var(--bg-dark);
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            font-size: 12px;
-            color: #888;
-            border-bottom: 1px solid #2b2b2b;
-            justify-content: space-between;
-        }
-
-        .editor-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .download-json-btn { 
-            background-color: #007fd4; 
-            color: white; 
-            border: none;
-            padding: 4px 12px;
-            cursor: pointer;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .download-json-btn:hover { background-color: #005a9e; }
-
-        .editor-wrapper {
-            flex: 1;
-            position: relative;
-            background-color: var(--bg-dark);
-        }
-        
-        textarea.editor {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-dark);
-            color: #d4d4d4;
-            border: none;
-            resize: none;
-            padding: 15px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            outline: none;
-            tab-size: 4;
-        }
-
-        /* --- Bottom Panel --- */
-        .bottom-panel {
-            height: 200px;
-            min-height: 100px;
-            max-height: 80vh;
-            background-color: var(--bg-dark);
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .panel-header {
-            height: 30px;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            gap: 25px;
-            font-size: 11px;
-            font-weight: bold;
-            color: #888;
-            border-bottom: 1px solid #2b2b2b;
-            flex-shrink: 0;
-        }
-        
-        .panel-tab { 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            padding: 4px 0;
-            position: relative;
-        }
-        .panel-tab:hover { color: #ccc; }
-        .panel-tab.active { color: #fff; }
-        .panel-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: #fff;
-        }
-        
-        .panel-badge {
-            background-color: #4d4d4d;
-            color: white;
-            border-radius: 10px;
-            padding: 0 6px;
-            font-size: 10px;
-            margin-left: 4px;
-        }
-
-        #terminal-container { 
-            flex: 1; 
-            padding: 5px; 
-            background: var(--bg-dark); 
-            overflow: hidden; 
-        }
-
-        /* --- Preview Column --- */
-        .preview-column {
-            width: 45%;
-            min-width: 200px;
-            background-color: #fff;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid var(--border);
-            position: relative;
-        }
-
-        .browser-bar {
-            height: 36px;
-            background-color: #252526;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 10px;
-            border-bottom: 1px solid #3c3c3c;
-            flex-shrink: 0;
-        }
-        
-        .browser-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .browser-actions svg {
-            color: #ccc;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            stroke-width: 2;
-        }
-        .browser-actions svg:hover { color: #fff; }
-        
-        .browser-close-btn {
-            color: #ccc;
-            cursor: pointer;
-            font-size: 18px;
-            margin-left: 5px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            display: none;
-        }
-        .browser-close-btn:hover {
-            background-color: #3c3c3c;
-            color: #fff;
-        }
-
-        .address-bar {
-            flex: 1;
-            background-color: #3c3c3c;
-            border-radius: 3px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            color: #ccc;
-            font-size: 12px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        #preview-mount-point {
-            flex: 1;
-            width: 100%;
-            background-color: white;
-            overflow: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-        }
-
-        /* --- Resizers --- */
-                /* --- Resizers --- */
-        .resizer-h {
-            height: 4px; 
-            background: transparent; 
-            cursor: row-resize; 
-            z-index: 10;
-            position: relative;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .resizer-h:hover, .resizer-h:active { 
-            background: var(--resizer-hover); 
-        }
-        
-        .resizer-v {
-            width: 4px; 
-            background: transparent; 
-            cursor: col-resize; 
-            z-index: 10;
-            position: relative;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .resizer-v:hover, .resizer-v:active { 
-            background: var(--resizer-hover); 
-        }
-        
-        /* Prevent dragging of resizers */
-        .resizer-h, .resizer-v {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            -user-drag: none;
-        }
-
-        /* Context Menu */
-        .context-menu {
-            display: none; 
-            position: fixed; 
-            z-index: 9999;
-            width: 160px; 
-            background: #252526; 
-            border: 1px solid #454545;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5); 
-            padding: 4px 0;
-        }
-        
-        .context-menu-item { 
-            padding: 8px 12px; 
-            color: #ccc; 
-            cursor: pointer; 
-            display: flex; 
-            font-size: 13px; 
-        }
-        .context-menu-item:hover { background: #094771; color: #fff; }
-        .context-menu-separator { 
-            height: 1px; 
-            background: #454545; 
-            margin: 4px 0; 
+    .ide{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    font-size: 13px;
+    user-select: none;
 }
-        .context-menu-item.disabled { 
-            color: #666; 
-            pointer-events: none; 
-        }
 
-        /* Loading Spinner */
-        .loading {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007fd4;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
+.activity-bar {
+    width: 48px;
+    background-color: #333333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    border-right: 1px solid var(--border);
+    z-index: 20;
+    flex-shrink: 0;
+}
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+.activity-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: #858585;
+    position: relative;
+}
+.activity-icon:hover { color: #fff; }
+.activity-icon.active { color: #fff; border-left: 2px solid #fff; }
+.activity-icon svg { width: 24px; height: 24px; }
+
+.sidebar {
+    width: 250px;
+    min-width: 0;
+    background-color: var(--bg-panel);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    transition: width 0.1s ease-out;
+    overflow: hidden;
+}
+.sidebar.collapsed { 
+    width: 0 !important; 
+    min-width: 0 !important;
+    border: none; 
+}
+
+.sidebar-title {
+    padding: 10px 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 35px;
+    min-height: 35px;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+.section-header {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    color: #bbb;
+    border-bottom: 1px solid var(--border);
+    height: 30px;
+    min-height: 30px;
+}
+.section-header:hover { color: #fff; background-color: #2a2d2e; }
+.section-header svg { 
+    width: 14px; 
+    height: 14px; 
+    margin-right: 5px; 
+    transition: transform 0.2s; 
+    flex-shrink: 0;
+}
+.section-header.collapsed svg { transform: rotate(-90deg); }
+
+.file-tree { 
+    overflow-y: auto; 
+    flex: 1; 
+    padding: 5px 0;
+}
+
+.file-item {
+    padding: 4px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 24px;
+}
+.file-item:hover { background-color: #2a2d2e; }
+.file-item.active { background-color: #37373d; color: #fff; }
+.file-indent { margin-left: 10px; }
+.file-item .folder-arrow {
+    width: 14px;
+    display: inline-block;
+    text-align: center;
+    margin-right: 4px;
+    color: #dcb67a;
+    font-size: 10px;
+}
+
+/* --- Main Content Area --- */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    min-width: 300px;
+}
+
+/* --- Code Column --- */
+.code-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    position: relative;
+}
+
+/* Tabs */
+.tabs-header {
+    display: flex;
+    background-color: var(--bg-panel);
+    overflow-x: auto;
+    flex-shrink: 0;
+    height: 35px;
+    min-height: 35px;
+    border-bottom: 1px solid var(--border);
+}
+.tabs-header::-webkit-scrollbar { 
+    height: 2px; 
+    background: transparent;
+}
+.tabs-header::-webkit-scrollbar-thumb {
+    background: var(--accent);
+}
+
+.tab {
+    padding: 0 15px;
+    height: 100%;
+    background-color: var(--bg-inactive-tab);
+    color: #969696;
+    cursor: pointer;
+    border-right: 1px solid #252526;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    max-width: 200px;
+    font-size: 13px;
+    position: relative;
+}
+.tab.active { 
+    background-color: var(--bg-dark); 
+    color: #fff; 
+    border-bottom: 1px solid var(--bg-dark);
+}
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--bg-dark);
+}
+.tab-close { 
+    font-size: 16px; 
+    border-radius: 3px; 
+    padding: 0 4px;
+    margin-left: auto;
+}
+.tab-close:hover { background-color: #444; color: #fff; }
+
+/* Breadcrumbs */
+.breadcrumbs {
+    height: 30px;
+    background-color: var(--bg-dark);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    font-size: 12px;
+    color: #888;
+    border-bottom: 1px solid #2b2b2b;
+    justify-content: space-between;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.download-json-btn { 
+    background-color: #007fd4; 
+    color: white; 
+    border: none;
+    padding: 4px 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.download-json-btn:hover { background-color: #005a9e; }
+
+.editor-wrapper {
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-dark);
+}
+
+textarea.editor {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-dark);
+    color: #d4d4d4;
+    border: none;
+    resize: none;
+    padding: 15px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    tab-size: 4;
+}
+
+/* --- Bottom Panel --- */
+.bottom-panel {
+    height: 200px;
+    min-height: 100px;
+    max-height: 80vh;
+    background-color: var(--bg-dark);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    gap: 25px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #888;
+    border-bottom: 1px solid #2b2b2b;
+    flex-shrink: 0;
+}
+
+.panel-tab { 
+    cursor: pointer; 
+    text-transform: uppercase; 
+    padding: 4px 0;
+    position: relative;
+}
+.panel-tab:hover { color: #ccc; }
+.panel-tab.active { color: #fff; }
+.panel-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #fff;
+}
+
+.panel-badge {
+    background-color: #4d4d4d;
+    color: white;
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+#terminal-container { 
+    flex: 1; 
+    padding: 5px; 
+    background: var(--bg-dark); 
+    overflow: hidden; 
+}
+
+/* --- Preview Column --- */
+.preview-column {
+    width: 45%;
+    min-width: 200px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    position: relative;
+}
+
+.browser-bar {
+    height: 36px;
+    background-color: #252526;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 10px;
+    border-bottom: 1px solid #3c3c3c;
+    flex-shrink: 0;
+}
+
+.browser-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.browser-actions svg {
+    color: #ccc;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    stroke-width: 2;
+}
+.browser-actions svg:hover { color: #fff; }
+
+.browser-close-btn {
+    color: #ccc;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: none;
+}
+.browser-close-btn:hover {
+    background-color: #3c3c3c;
+    color: #fff;
+}
+
+.address-bar {
+    flex: 1;
+    background-color: #3c3c3c;
+    border-radius: 3px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: #ccc;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#preview-mount-point {
+    flex: 1;
+    width: 100%;
+    background-color: white;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+/* --- Resizers --- */
+        /* --- Resizers --- */
+.resizer-h {
+    height: 4px; 
+    background: transparent; 
+    cursor: row-resize; 
+    z-index: 10;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.resizer-h:hover, .resizer-h:active { 
+    background: var(--resizer-hover); 
+}
+
+.resizer-v {
+    width: 4px; 
+    background: transparent; 
+    cursor: col-resize; 
+    z-index: 10;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.resizer-v:hover, .resizer-v:active { 
+    background: var(--resizer-hover); 
+}
+
+/* Prevent dragging of resizers */
+.resizer-h, .resizer-v {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    -user-drag: none;
+}
+
+/* Context Menu */
+.context-menu {
+    display: none; 
+    position: fixed; 
+    z-index: 9999;
+    width: 160px; 
+    background: #252526; 
+    border: 1px solid #454545;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5); 
+    padding: 4px 0;
+}
+
+.context-menu-item { 
+    padding: 8px 12px; 
+    color: #ccc; 
+    cursor: pointer; 
+    display: flex; 
+    font-size: 13px; 
+}
+.context-menu-item:hover { background: #094771; color: #fff; }
+.context-menu-separator { 
+    height: 1px; 
+    background: #454545; 
+    margin: 4px 0; 
+}
+.context-menu-item.disabled { 
+    color: #666; 
+    pointer-events: none; 
+}
+
+.loading {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007fd4;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 </head>
-<body>
+<body class="ide">
 
 <div class="activity-bar">
     <div class="activity-icon active" title="Explorer" onclick="toggleSidebar()">
@@ -604,7 +602,6 @@
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
 
 <script>
-    // --- Initial Data ---
     const files = {
         'views.py': `from django.shortcuts import render\ndef home(request):\n    return render(request, 'index.html', {'message': 'Hello from Cloud!'})`,
         'urls.py': `from django.urls import path\nfrom . import views\nurlpatterns = [\n    path('', views.home, name='home'),\n]`,
@@ -636,15 +633,13 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
     let clipboard = { op: null, path: null, type: null };
     let currentPanel = 'terminal';
     
-    // --- SERVER STATE VARIABLES ---
     let serverRunning = false;
-    let serverType = null; // 'streamlit', 'django', or null
+    let serverType = null; 
     let serverUrl = 'http://localhost:8000/';
     let serverIframe = null;
     let currentDjangoProject = null;
-    let serverFile = null; // Track which file is running the server
+    let serverFile = null; 
 
-    // --- DOM Elements ---
     const editor = document.getElementById('codeEditor');
     const tabsHeader = document.getElementById('tabsHeader');
     const fileTree = document.getElementById('fileTree');
@@ -659,19 +654,16 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
 
     let term, fitAddon;
 
-    // --- Helper function to get Django homepage content ---
     function getDjangoHomepage() {
         if (!currentDjangoProject) {
             return null;
         }
 
-        // Check for project-level template
         const projectTemplate = `${currentDjangoProject}/templates/index.html`;
         if (files[projectTemplate]) {
             return files[projectTemplate];
         }
 
-        // Check for app-level templates
         const appTemplateKeys = Object.keys(files).filter(key => 
             key.startsWith(currentDjangoProject + '/') && 
             key.includes('templates') && 
@@ -679,14 +671,12 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
         );
 
         if (appTemplateKeys.length > 0) {
-            // Return the first one found
             return files[appTemplateKeys[0]];
         }
 
         return null;
     }
 
-    // --- JSON Download Logic ---
     function downloadFileAsJson() {
         if (!activeFile) {
             alert('No active file to download');
@@ -714,7 +704,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
         URL.revokeObjectURL(url);
     }
 
-    // --- Initialize ---
     window.onload = function() {
         restoreSession();
         initTerminal();
@@ -730,46 +719,35 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
         setupResizers();
         updatePreview();
         
-        // Close context menu on global click
         document.addEventListener('click', (e) => {
             if (contextMenu && !contextMenu.contains(e.target)) {
                 contextMenu.style.display = 'none';
             }
         });
         
-        // Close context menu on escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 contextMenu.style.display = 'none';
             }
         });
         
-        // Prevent default context menu on file tree
         fileTree.addEventListener('contextmenu', e => e.preventDefault());
         
-        // Auto-save when editor loses focus
         editor.addEventListener('blur', saveCurrentState);
         
-        // Handle tab key in editor
         editor.addEventListener('keydown', function(e) {
             if (e.key === 'Tab') {
                 e.preventDefault();
                 const start = this.selectionStart;
                 const end = this.selectionEnd;
                 
-                // Insert tab
                 this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
-                
-                // Move cursor
                 this.selectionStart = this.selectionEnd = start + 4;
-                
-                // Trigger input event for save
                 this.dispatchEvent(new Event('input'));
             }
         });
     };
 
-    // --- Update Close Button ---
     function updateCloseButton() {
         if (serverRunning) {
             closeServerBtn.style.display = 'inline-block';
@@ -778,7 +756,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
         }
     }
 
-    // --- Session Persistence ---
     function saveSession() {
         try {
             localStorage.setItem('ide_activeFile', activeFile);
@@ -843,7 +820,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
         }
     }
 
-    // --- Terminal & Command Logic ---
     function initTerminal() {
         if (term) {
             term.dispose();
@@ -903,7 +879,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
             else if (ev.key === 'ArrowUp') {
                 if (historyIndex > 0) {
                     historyIndex--;
-                    // Clear current line
                     term.write('\x1b[2K\r');
                     prompt();
                     currentLine = commandHistory[historyIndex];
@@ -930,7 +905,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
             }
         });
         
-        // Handle resize
         new ResizeObserver(() => fitAddon.fit()).observe(terminalContainer);
     }
 
@@ -977,7 +951,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                 const currentDir = getInternalCwd();
                 const items = [];
                 
-                // Add folders
                 folders.forEach(f => {
                     if (f.startsWith(currentDir) && f !== currentDir) {
                         const relative = f.substring(currentDir.length).split('/')[0];
@@ -987,7 +960,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                     }
                 });
                 
-                // Add files
                 Object.keys(files).forEach(f => {
                     if (f.startsWith(currentDir) && f !== currentDir) {
                         const relative = f.substring(currentDir.length).split('/')[0];
@@ -997,7 +969,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                     }
                 });
                 
-                // Sort and display
                 items.sort((a, b) => {
                     const aIsFolder = a.endsWith('/');
                     const bIsFolder = b.endsWith('/');
@@ -1080,7 +1051,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                     if (files[targetPath]) {
                         delete files[targetPath];
                         
-                        // Remove from open files
                         const index = openFiles.indexOf(targetPath);
                         if (index > -1) {
                             openFiles.splice(index, 1);
@@ -1095,7 +1065,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                         renderFileTree();
                         term.writeln(`Removed '${args[0]}'`);
                     } else if (folders.has(targetPath)) {
-                        // Check if folder is empty
                         let hasContents = false;
                         for (let f of folders) {
                             if (f.startsWith(targetPath + '/')) {
@@ -1141,7 +1110,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                         term.writeln('\x1b[32mStarting development server at http://127.0.0.1:8000/\x1b[0m');
                         term.writeln('Quit the server with CTRL-C.');
                         
-                        // Start Django server
                         runDjangoServer();
                         
                     } else if (args[1] === 'migrate') {
@@ -1155,7 +1123,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                         term.writeln('Creating SQLite database file: db.sqlite3');
                         term.writeln('\x1b[32mMigrations completed successfully.\x1b[0m');
                         
-                        // Create db.sqlite3 file
                         files['db.sqlite3'] = '[SQLite Database File]';
                         renderFileTree();
                         
@@ -1172,7 +1139,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                         folders.add(appPath);
                         folders.add(`${appPath}/migrations`);
                         
-                        // Create app files
                         files[`${appPath}/__init__.py`] = '';
                         files[`${appPath}/admin.py`] = `from django.contrib import admin\nfrom .models import *\n\n# Register your models here`;
                         files[`${appPath}/apps.py`] = `from django.apps import AppConfig\n\nclass ${appName.charAt(0).toUpperCase() + appName.slice(1)}Config(AppConfig):\n    default_auto_field = 'django.db.models.BigAutoField'\n    name = '${appName}'`;
@@ -1180,10 +1146,8 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                         files[`${appPath}/tests.py`] = `from django.test import TestCase\n\n# Create your tests here`;
                         files[`${appPath}/views.py`] = `from django.shortcuts import render\nfrom django.http import HttpResponse\n\n# Create your views here\ndef index(request):\n    return HttpResponse("Hello from ${appName} app!")`;
                         
-                        // Create app urls.py
                         files[`${appPath}/urls.py`] = `from django.urls import path\nfrom . import views\n\nurlpatterns = [\n    path('', views.index, name='index'),\n]`;
                         
-                        // Create templates directory and index.html for the app
                         const templatePath = `${appPath}/templates/${appName}`;
                         folders.add(`${appPath}/templates`);
                         folders.add(templatePath);
@@ -1220,7 +1184,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
 </body>
 </html>`;
                         
-                        // Update project urls.py to include the app
                         const projectName = projectPath.split('/').pop();
                         const mainUrlsPath = `${projectPath}/${projectName}/urls.py`;
                         if (files[mainUrlsPath]) {
@@ -1230,7 +1193,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                             );
                         }
                         
-                        // Update project settings.py to include the app
                         const settingsPath = `${projectPath}/${projectName}/settings.py`;
                         if (files[settingsPath]) {
                             if (files[settingsPath].includes("INSTALLED_APPS = [")) {
@@ -1289,7 +1251,6 @@ st.write("Running Pandas, NumPy, and Matplotlib purely in the browser via WebAss
                     const projName = args[1];
                     folders.add(projName);
                     
-                    // Create project structure
                     files[`${projName}/manage.py`] = `#!/usr/bin/env python
 """Django's command-line utility for administrative tasks.""" 
 import os
@@ -1309,11 +1270,9 @@ def main():
 if __name__ == '__main__':
     main()`;
                     
-                    // Create project folder
                     const projectFolder = `${projName}/${projName}`;
                     folders.add(projectFolder);
                     
-                    // Create settings.py
                     files[`${projectFolder}/__init__.py`] = '';
                     files[`${projectFolder}/settings.py`] = `"""
 Django settings for ${projName} project.
@@ -1405,7 +1364,6 @@ STATIC_URL = 'static/'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'`;
                     
-                    // Create urls.py
                     files[`${projectFolder}/urls.py`] = `"""
 URL configuration for ${projName} project.
 """
@@ -1416,7 +1374,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]`;
                     
-                    // Create wsgi.py
                     files[`${projectFolder}/wsgi.py`] = `"""
 WSGI config for ${projName} project.
 """
@@ -1429,7 +1386,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${projName}.settings')
 
 application = get_wsgi_application()`;
                     
-                    // Create asgi.py
                     files[`${projectFolder}/asgi.py`] = `"""
 ASGI config for ${projName} project.
 """
@@ -1442,7 +1398,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${projName}.settings')
 
 application = get_asgi_application()`;
                     
-                    // Create templates and static folders
                     folders.add(`${projName}/templates`);
                     folders.add(`${projName}/static`);
                     
@@ -1450,7 +1405,6 @@ application = get_asgi_application()`;
                     term.writeln(`\x1b[32mCreated project '${projName}'\x1b[0m`);
                     term.writeln(`Use 'cd ${projName}' to enter the project directory`);
                     
-                    // Set current Django project
                     currentDjangoProject = projName;
                     
                 } else if (args[0] === 'help') {
@@ -1471,7 +1425,7 @@ application = get_asgi_application()`;
                     if (files[targetFile] !== undefined) {
                         term.writeln('\x1b[32mStarting Streamlit server...\x1b[0m');
                         term.writeln('Loading dependencies via WebAssembly...');
-                        serverFile = targetFile; // Track which file is running the server
+                        serverFile = targetFile; 
                         runStlite(files[targetFile]);
                     } else {
                         term.writeln(`\x1b[31mError: File '${args[1]}' not found\x1b[0m`);
@@ -1502,7 +1456,7 @@ application = get_asgi_application()`;
             return cwd;
         }
         
-        // Check parent directories
+        
         const parts = cwd.split('/');
         for (let i = parts.length; i > 0; i--) {
             const path = parts.slice(0, i).join('/');
@@ -2640,5 +2594,5 @@ application = get_asgi_application()`;
     }
 </script>
 
-</body>
+</body class="ide">
 </html>

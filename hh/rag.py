@@ -1,13 +1,9 @@
 import os
-import hashlib
-import requests
-
 MODEL_NAME = "llama-3.1-8b-instant"
-GROQ_API_KEY = "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"
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 STATE = {"file_path": None, "extracted_text": ""}
 
 def call_groq(prompt):
-    """Call Groq API."""
     import requests
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
@@ -28,5 +24,5 @@ def process_input(user_input):
             response = call_groq(prompt)
             return f"\n{response}\n"
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
         

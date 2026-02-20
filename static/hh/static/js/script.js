@@ -190,40 +190,29 @@ const projectData = {
 
 };
 
-// ========== STATE ==========
 let currentProject = null;
 let currentProjectId = null;
 let currentProjectName = null;
 let currentLevel = null;
 let selectedLanguage = null;
 
-// ========== MODAL FUNCTIONS ==========
 function openProject(roleName, roleId) {
-    // Store the role information
     currentProjectName = roleName;
     currentProjectId = roleId;
-
-    // Map the role name to the project key for the UI data
     currentProject = mapRoleToProjectKey(roleName);
-
     document.getElementById('projTitle').textContent = projectData[currentProject].name;
     document.getElementById('levelModal').classList.add('show');
-
-    // Reset state
     currentLevel = null;
     selectedLanguage = null;
     document.querySelectorAll('.level-btn').forEach(b => {
         b.classList.remove('selected');
     });
     document.getElementById('langBox').classList.add('hide');
-    
-    // Clear and repopulate language dropdown
     const langSelect = document.getElementById('lang');
     langSelect.innerHTML = '';
 }
 
 function mapRoleToProjectKey(roleName) {
-    // Map the role names from your backend to the projectData keys
     const roleMapping = {
         'Frontend Developer': 'frontend',
         'Backend Developer': 'backend',
@@ -233,25 +222,21 @@ function mapRoleToProjectKey(roleName) {
         'Cloud Engineer': 'cloud',
     };
 
-    return roleMapping[roleName] || 'frontend'; // Default to frontend if not found
+    return roleMapping[roleName] || 'frontend';
 }
 
 function populateLanguageDropdown() {
     const langSelect = document.getElementById('lang');
-    langSelect.innerHTML = ''; // Clear existing options
+    langSelect.innerHTML = ''; 
     
     if (currentProject && projectData[currentProject]) {
         const project = projectData[currentProject];
-        
-        // Add default empty option
         const defaultOption = document.createElement('option');
         defaultOption.value = '';
         defaultOption.textContent = 'Select a technology';
         defaultOption.disabled = true;
         defaultOption.selected = true;
         langSelect.appendChild(defaultOption);
-        
-        // Add language options based on project type
         project.languages.forEach(lang => {
             const option = document.createElement('option');
             option.value = lang;
@@ -263,20 +248,15 @@ function populateLanguageDropdown() {
 
 function chooseLevel(level, btn) {
     currentLevel = level;
-    // Remove selected class from all level buttons
     document.querySelectorAll('.level-btn').forEach(b => {
         b.classList.remove('selected');
     });
-
-    // Add selected class to clicked button
     btn.classList.add('selected');
 
     if (level === 'beginner') {
-        // For beginner, hide language selection
         document.getElementById('langBox').classList.add('hide');
-        selectedLanguage = projectData[currentProject].languages[0]; // Default to first language
+        selectedLanguage = projectData[currentProject].languages[0]; 
     } else {
-        // For advanced, show language selection with project-specific options
         populateLanguageDropdown();
         document.getElementById('langBox').classList.remove('hide');
         selectedLanguage = null;
@@ -288,8 +268,6 @@ function begin() {
         alert('👋 Please select your experience level');
         return;
     }
-
-    // Get language selection for advanced level
     if (currentLevel === 'advanced') {
         selectedLanguage = document.getElementById('lang').value;
         if (!selectedLanguage) {
@@ -305,16 +283,11 @@ function begin() {
 
     const project = projectData[currentProject];
     const topics = currentLevel === 'beginner' ? project.beginner : project.advanced;
-
-    // Format level name
     const levelName = currentLevel === 'beginner' ? '🌱 Beginner Path' : '🚀 Advanced Path';
-    
-    // Get language display name
     const languageDisplay = currentLevel === 'beginner' 
         ? project.languageLabels[selectedLanguage] || selectedLanguage
         : project.languageLabels[selectedLanguage] || selectedLanguage;
 
-    // Display project details
     document.getElementById('details').innerHTML = `
         <div class="info-box">
             <h4>${project.name}</h4>
@@ -339,13 +312,11 @@ function begin() {
         </div>
     `;
 
-    // Close level modal and open details modal
     document.getElementById('levelModal').classList.remove('show');
     document.getElementById('startModal').classList.add('show');
 }
 
 function startSimulation() {
-    // Prepare data to send to backend
     const simulationData = {
         role_id: currentProjectId,
         role_name: currentProjectName,
@@ -354,12 +325,11 @@ function startSimulation() {
         timestamp: new Date().toISOString()
     };
 
-    // Send data to backend using fetch API
     fetch('/trial/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'), // Include if using Django CSRF protection
+            'X-CSRFToken': getCookie('csrftoken'),
             'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify(simulationData)
@@ -372,15 +342,11 @@ function startSimulation() {
     })
     .then(data => {
         console.log('Simulation started successfully:', data);
-        
-        // Check the role and redirect accordingly
         const frontendRoles = ['Frontend Developer', 'Backend Developer', 'Data Analyst'];
         
         if (frontendRoles.includes(currentProjectName)) {
-            // Redirect to tt.html for these roles
             window.location.href = '/sim/';
         } else {
-            // For other roles, redirect to a different page or handle differently
             window.location.href = `/simulation/${currentProjectId}/`;
         }
         
@@ -392,7 +358,6 @@ function startSimulation() {
     });
 }
 
-// Helper function to get CSRF token (for Django)
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -423,14 +388,12 @@ function closeModals() {
     selectedLanguage = null;
 }
 
-// Close modal when clicking outside
 window.onclick = function(event) {
     if (event.target.classList.contains('overlay')) {
         closeModals();
     }
 }
 
-// Make functions available globally
 window.openProject = openProject;
 window.chooseLevel = chooseLevel;
 window.begin = begin;
@@ -446,6 +409,6 @@ const timer = setInterval(() => {
 
     if (timeLeft <= 0) {
         clearInterval(timer);
-        window.location.href = "/begin/"; // Redirect to the welcome page after countdown
+        window.location.href = "/begin/"; 
     }
 }, 1000);

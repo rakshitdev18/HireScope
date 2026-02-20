@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
 
-        body {
+        .mail-body {
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #f6f8fc;
             height: 100vh;
@@ -20,8 +20,7 @@
             flex-direction: column;
         }
 
-        /* Header */
-        .header {
+        .mheader {
             background: white;
             padding: 12px 24px;
             border-bottom: 1px solid #e0e0e0;
@@ -31,7 +30,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .logo {
+        .mlogo {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -514,10 +513,10 @@
         }
     </style>
 </head>
-<body>
+<body class="mail-body">
     <!-- Header -->
-    <div class="header">
-        <div class="logo">
+    <div class="mheader">
+        <div class="mlogo">
             <i class="fas fa-envelope logo-icon"></i>
             <span class="logo-text">WorkMail</span>
         </div>
@@ -1015,5 +1014,5 @@ Tech Innovations Inc.`,
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', initializeEmails);
     </script>
-</body>
+</body class="mail-body">
 </html>
