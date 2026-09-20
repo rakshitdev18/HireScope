@@ -14,4 +14,5 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 10000
 
-CMD ["gunicorn", "hh.wsgi:application", "--bind", "0.0.0.0:10000"]
+# Render PORT env variable deta hai (default 10000)
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn web.wsgi:application --bind 0.0.0.0:${PORT:-10000}"]
