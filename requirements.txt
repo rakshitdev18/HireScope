@@ -1,3 +1,5 @@
-mysqlclient
+Django>=6.0,<6.1
 gunicorn
 whitenoise
+requests
+Pillow
