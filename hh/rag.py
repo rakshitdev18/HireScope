@@ -1,5 +1,5 @@
 import os
-MODEL_NAME = "llama-3.1-8b-instant"
+MODEL_NAME = "openai/gpt-oss-120b"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 STATE = {"file_path": None, "extracted_text": ""}
 
